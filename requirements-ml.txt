@@ -1,1 +1,8 @@
-# ML dependencies will be pinned in the next phase.
+# TensorFlow pip wheels require a supported Python runtime such as 3.11.
+tensorflow
+scikit-learn==1.5.1
+numpy==1.26.4
+pandas==2.2.2
+pillow==10.4.0
+matplotlib==3.9.1
+jupyter==1.0.0
