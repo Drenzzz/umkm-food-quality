@@ -66,9 +66,12 @@ cp .env.example .env
 
 Variable yang sudah disiapkan untuk fase awal:
 
+- `APP_ENV`
 - `DATABASE_URL`
 - `SECRET_KEY`
 - `ACCESS_TOKEN_EXPIRE_MINUTES`
 - `MODEL_PATH`
 - `CLASS_INDICES_PATH`
 - `CORS_ORIGINS`
+
+Referensi detail arti tiap variable dan aturan secret ada di `docs/environment_variables.md`.
