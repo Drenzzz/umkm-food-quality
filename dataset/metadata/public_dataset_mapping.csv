@@ -1,0 +1,11 @@
+dataset_name,source_group,source_label,final_label,product_domain,notes
+IndustryBiscuit,annotations,Defect_No,layak_jual,biskuit_kukis,Primary public source for biscuit domain
+IndustryBiscuit,annotations,Defect_Shape,tidak_layak_jual,biskuit_kukis,Shape defect is treated as unsellable
+IndustryBiscuit,annotations,Defect_Object,tidak_layak_jual,biskuit_kukis,Object defect is treated as unsellable
+IndustryBiscuit,annotations,Defect_Color,tidak_layak_jual,biskuit_kukis,Color defect is treated as unsellable
+taterdat-chip,folder,Non-Defective,layak_jual,keripik,Folder name normalized from current source layout
+taterdat-chip,folder,Defective,tidak_layak_jual,keripik,Folder name normalized from current source layout
+Pepsico RnD Potato Lab Dataset,train_folder,Non-Defective,layak_jual,keripik,Train split source label
+Pepsico RnD Potato Lab Dataset,train_folder,Defective,tidak_layak_jual,keripik,Train split source label
+Pepsico RnD Potato Lab Dataset,test_folder,Not Defective,layak_jual,keripik,Test split source label differs in spacing
+Pepsico RnD Potato Lab Dataset,test_folder,Defective,tidak_layak_jual,keripik,Test split source label
