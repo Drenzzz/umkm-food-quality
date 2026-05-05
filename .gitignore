@@ -1,0 +1,13 @@
+.env
+venv/
+__pycache__/
+*.pyc
+
+dataset/final/
+ml/model/*.keras
+ml/model/*.h5
+ml/model/*.ckpt
+
+.DS_Store
+.idea/
+.vscode/
