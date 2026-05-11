@@ -68,7 +68,7 @@ def transform_image(source_path: Path, destination_path: Path, image_size: int) 
 
 
 def build_output_filename(item: DatasetItem) -> str:
-    stable_source = f"{item.dataset_slug}:{item.source_group}:{item.relative_source}"
+    stable_source = f"{item.dataset_slug}:{item.source_group}:{item.source_label}:{item.relative_source}"
     digest = hashlib.sha1(stable_source.encode("utf-8")).hexdigest()[:12]
     return f"{item.dataset_slug}_{digest}.jpg"
 
