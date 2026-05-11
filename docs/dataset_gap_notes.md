@@ -6,31 +6,31 @@ Dokumen ini merangkum audit balance label dan gap domain untuk baseline public d
 
 | Label | Count |
 |---|---:|
-| `layak_jual` | 3 |
-| `tidak_layak_jual` | 3 |
+| `layak_jual` | 2896 |
+| `tidak_layak_jual` | 3926 |
 
 ## Balance per Dataset Source
 
 | Dataset Slug | Layak Jual | Tidak Layak Jual |
 |---|---:|---:|
-| `industry_biscuit` | 1 | 1 |
-| `pepsico_potato_lab` | 1 | 1 |
-| `taterdat_chip` | 1 | 1 |
+| `industry_biscuit` | 1896 | 3004 |
+| `pepsico_potato_lab` | 500 | 461 |
+| `taterdat_chip` | 500 | 461 |
 
 ## Balance per Product Domain
 
 | Product Domain | Layak Jual | Tidak Layak Jual |
 |---|---:|---:|
-| `biskuit_kukis` | 1 | 1 |
-| `keripik` | 2 | 2 |
+| `biskuit_kukis` | 1896 | 3004 |
+| `keripik` | 1000 | 922 |
 
 ## Split Coverage
 
 | Split | Layak Jual | Tidak Layak Jual |
 |---|---:|---:|
-| `train` | 3 | 3 |
-| `val` | 0 | 0 |
-| `test` | 0 | 0 |
+| `train` | 2027 | 2749 |
+| `val` | 434 | 589 |
+| `test` | 435 | 588 |
 
 ## Missing or Deferred Domains
 
@@ -38,8 +38,7 @@ Dokumen ini merangkum audit balance label dan gap domain untuk baseline public d
 
 ## Key Observations
 
-- Total label publik saat ini masih seimbang antara layak_jual dan tidak_layak_jual.
+- Total label publik saat ini belum seimbang dan perlu dipantau saat dataset diperbesar.
 - Domain kerupuk masih kosong dan tetap menjadi gap utama yang harus ditutup oleh data primer lokal.
 - Domain keripik sudah punya dua sumber publik berbeda, sehingga baseline gabungan keripik layak diuji di fase eksperimen berikutnya.
 - Domain biskuit_kukis masih bertumpu pada satu sumber utama, sehingga validasi domain lintas sumber nanti tetap penting.
-- Split validation dan test masih kosong pada smoke-test ini, yang normal karena ukuran bucket per sumber-label masih sangat kecil.
