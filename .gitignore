@@ -12,6 +12,10 @@ dataset/archive/**/*.txt
 ml/model/*.keras
 ml/model/*.h5
 ml/model/*.ckpt
+ml/model/**/*.keras
+ml/model/**/training_history.json
+ml/model/**/training_log.csv
+ml/model/**/class_indices.json
 
 .DS_Store
 .idea/

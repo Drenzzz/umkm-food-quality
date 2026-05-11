@@ -1,8 +1,8 @@
-# TensorFlow pip wheels require a supported Python runtime such as 3.11.
-tensorflow
-scikit-learn
-numpy
-pandas
-pillow
-matplotlib
-jupyter
+# TensorFlow GPU support in this project expects Python 3.11 and bundled NVIDIA runtime wheels.
+tensorflow[and-cuda]==2.21.0
+scikit-learn==1.7.2
+numpy==2.4.4
+pandas==2.3.3
+pillow==12.2.0
+matplotlib==3.10.7
+jupyter==1.1.1

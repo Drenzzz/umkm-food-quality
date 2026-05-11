@@ -48,6 +48,20 @@ source .venv-ml/bin/activate
 python -m pip install -r requirements-ml.txt
 ```
 
+### ML GPU Runtime Check
+
+Jika environment ML ingin memakai GPU NVIDIA, jalankan interpreter lewat wrapper project ini supaya `LD_LIBRARY_PATH` otomatis memuat runtime libraries dari package TensorFlow GPU.
+
+```bash
+./scripts/run_ml_python.sh -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+```
+
+Target output minimal:
+
+```text
+[PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')]
+```
+
 ### Backend Environment
 
 ```bash
