@@ -13,6 +13,7 @@ ml/model/*.keras
 ml/model/*.h5
 ml/model/*.ckpt
 ml/model/**/evaluation/
+ml/model/**/artifact_manifest.json
 ml/model/**/*.keras
 ml/model/**/training_history.json
 ml/model/**/training_log.csv
