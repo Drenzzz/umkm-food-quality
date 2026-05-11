@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,6 +19,10 @@ from sklearn.metrics import (
     recall_score,
 )
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from ml.artifacts import ensure_manifest, relative_to_model_dir, save_manifest, utc_now_iso
 
