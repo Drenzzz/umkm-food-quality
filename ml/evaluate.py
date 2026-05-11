@@ -19,6 +19,8 @@ from sklearn.metrics import (
 )
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
+from ml.artifacts import ensure_manifest, relative_to_model_dir, save_manifest, utc_now_iso
+
 
 LABEL_TO_INDEX = {
     "layak_jual": 0,
@@ -100,6 +102,7 @@ def main() -> int:
     model_dir = args.model_dir.resolve() if args.model_dir else project_root / "ml" / "model" / args.experiment
     output_dir = model_dir / "evaluation"
     output_dir.mkdir(parents=True, exist_ok=True)
+    manifest = ensure_manifest(model_dir, args.experiment, "MobileNetV2")
 
     rows = load_rows(split_csv, project_root, args.experiment)
     evaluation_rows, used_split = select_evaluation_rows(rows, args.split_name)
@@ -140,6 +143,20 @@ def main() -> int:
         y_true,
         y_pred,
     )
+    manifest.files.update(
+        {
+            "evaluation_report": relative_to_model_dir(model_dir, output_dir / "evaluation_report.json"),
+            "confusion_matrix": relative_to_model_dir(model_dir, output_dir / "confusion_matrix.png"),
+        }
+    )
+    manifest.evaluation = {
+        "used_split": used_split,
+        "threshold": args.threshold,
+        "sample_count": int(len(y_true)),
+        "priority_metric": "recall_tidak_layak_jual",
+        "finished_at": utc_now_iso(),
+    }
+    save_manifest(model_dir, manifest)
 
     print(f"Accuracy: {metrics['accuracy']:.4f}")
     print(f"Precision: {metrics['precision_macro']:.4f}")

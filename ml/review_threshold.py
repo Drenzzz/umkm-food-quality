@@ -11,6 +11,8 @@ import tensorflow as tf
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
+from ml.artifacts import ensure_manifest, relative_to_model_dir, save_manifest, utc_now_iso
+
 
 LABEL_TO_INDEX = {
     "layak_jual": 0,
@@ -104,6 +106,7 @@ def main() -> int:
     model_dir = args.model_dir.resolve() if args.model_dir else project_root / "ml" / "model" / args.experiment
     output_dir = model_dir / "evaluation"
     output_dir.mkdir(parents=True, exist_ok=True)
+    manifest = ensure_manifest(model_dir, args.experiment, "MobileNetV2")
 
     rows = load_rows(split_csv, project_root, args.experiment)
     selected_rows, used_split = select_rows(rows, args.split_name)
@@ -137,6 +140,15 @@ def main() -> int:
 
     output_path = output_dir / "threshold_review.json"
     output_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    manifest.files["threshold_review"] = relative_to_model_dir(model_dir, output_path)
+    manifest.threshold_review = {
+        "used_split": used_split,
+        "priority_metric": "recall_tidak_layak_jual",
+        "recommended_threshold": best_threshold["threshold"],
+        "threshold_count": len(threshold_results),
+        "finished_at": utc_now_iso(),
+    }
+    save_manifest(model_dir, manifest)
 
     print(f"Recommended threshold: {best_threshold['threshold']:.2f}")
     print(f"Recall Tidak Layak Jual: {best_threshold['recall_tidak_layak_jual']:.4f}")

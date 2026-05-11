@@ -15,6 +15,8 @@ from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D
 from tensorflow.keras.metrics import Precision, Recall
 from tensorflow.keras.optimizers import Adam
 
+from ml.artifacts import ensure_manifest, relative_to_model_dir, save_manifest, utc_now_iso
+
 
 LABEL_TO_INDEX = {
     "layak_jual": 0,
@@ -103,6 +105,7 @@ def main() -> int:
     metadata_path = project_root / experiment["training_plan"]["split_metadata"]
     output_dir = args.output_dir.resolve() if args.output_dir else project_root / "ml" / "model" / args.experiment
     output_dir.mkdir(parents=True, exist_ok=True)
+    manifest = ensure_manifest(output_dir, experiment["experiment_id"], experiment["training_plan"]["model_family"])
 
     rows = load_experiment_rows(metadata_path, project_root, experiment)
     split_rows = prepare_splits(rows)
@@ -158,6 +161,26 @@ def main() -> int:
         ),
         encoding="utf-8",
     )
+    manifest.status = "trained"
+    manifest.files.update(
+        {
+            "model": relative_to_model_dir(output_dir, output_dir / "model.keras"),
+            "class_indices": relative_to_model_dir(output_dir, output_dir / "class_indices.json"),
+            "training_history": relative_to_model_dir(output_dir, output_dir / "training_history.json"),
+            "training_log": relative_to_model_dir(output_dir, output_dir / "training_log.csv"),
+        }
+    )
+    manifest.training = {
+        "split_metadata": str(metadata_path.relative_to(project_root)).replace("\\", "/"),
+        "feature_epochs": args.feature_epochs,
+        "finetune_epochs": args.finetune_epochs,
+        "finetune_layers": args.finetune_layers,
+        "weights": args.weights,
+        "image_size": args.image_size,
+        "batch_size": args.batch_size,
+        "finished_at": utc_now_iso(),
+    }
+    save_manifest(output_dir, manifest)
     print("Training completed.")
     return 0
 
