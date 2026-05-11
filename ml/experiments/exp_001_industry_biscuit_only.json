@@ -1,0 +1,24 @@
+{
+  "experiment_id": "exp_001_industry_biscuit_only",
+  "experiment_name": "IndustryBiscuit Only",
+  "status": "planned",
+  "goal": "Build the first baseline for biscuit and cookie domain using a single public dataset source.",
+  "dataset_scope": {
+    "dataset_slugs": [
+      "industry_biscuit"
+    ],
+    "product_domains": [
+      "biskuit_kukis"
+    ],
+    "allowed_labels": [
+      "layak_jual",
+      "tidak_layak_jual"
+    ]
+  },
+  "training_plan": {
+    "input_metadata": "dataset/metadata/public_metadata.csv",
+    "split_metadata": "dataset/metadata/split_metadata.csv",
+    "model_family": "MobileNetV2",
+    "evaluation_priority": "recall_tidak_layak_jual"
+  }
+}

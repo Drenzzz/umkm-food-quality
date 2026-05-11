@@ -1,0 +1,24 @@
+{
+  "experiment_id": "exp_002_taterdat_chip_only",
+  "experiment_name": "taterdat-chip Only",
+  "status": "planned",
+  "goal": "Build the first keripik baseline from the folder-based public dataset source.",
+  "dataset_scope": {
+    "dataset_slugs": [
+      "taterdat_chip"
+    ],
+    "product_domains": [
+      "keripik"
+    ],
+    "allowed_labels": [
+      "layak_jual",
+      "tidak_layak_jual"
+    ]
+  },
+  "training_plan": {
+    "input_metadata": "dataset/metadata/public_metadata.csv",
+    "split_metadata": "dataset/metadata/split_metadata.csv",
+    "model_family": "MobileNetV2",
+    "evaluation_priority": "recall_tidak_layak_jual"
+  }
+}

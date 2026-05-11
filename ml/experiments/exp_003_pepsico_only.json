@@ -1,0 +1,24 @@
+{
+  "experiment_id": "exp_003_pepsico_only",
+  "experiment_name": "Pepsico Only",
+  "status": "planned",
+  "goal": "Build the second keripik baseline from the Pepsico public dataset source.",
+  "dataset_scope": {
+    "dataset_slugs": [
+      "pepsico_potato_lab"
+    ],
+    "product_domains": [
+      "keripik"
+    ],
+    "allowed_labels": [
+      "layak_jual",
+      "tidak_layak_jual"
+    ]
+  },
+  "training_plan": {
+    "input_metadata": "dataset/metadata/public_metadata.csv",
+    "split_metadata": "dataset/metadata/split_metadata.csv",
+    "model_family": "MobileNetV2",
+    "evaluation_priority": "recall_tidak_layak_jual"
+  }
+}
