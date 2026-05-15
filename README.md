@@ -34,11 +34,11 @@ Disarankan memakai dua virtual environment terpisah.
 
 ### Python Compatibility
 
-- Backend environment saat ini sudah aman di Python `3.14`.
+- Backend environment dan ML environment sama-sama diselaraskan ke Python `3.11`.
 - ML environment untuk TensorFlow harus memakai Python yang didukung wheel resmi.
-- Baseline yang dipakai project ini adalah Python `3.11` untuk ML.
+- Baseline runtime yang dipakai project ini adalah Python `3.11`.
 
-Jika interpreter aktif masih Python `3.14`, jangan pakai interpreter itu untuk environment ML karena `tensorflow==2.16.1` tidak menyediakan wheel untuk versi tersebut.
+Jika interpreter aktif masih Python `3.14`, jangan pakai interpreter itu untuk environment backend atau ML karena stack TensorFlow backend inference di project ini mengikuti runtime `3.11`.
 
 ### ML Environment
 
@@ -65,7 +65,7 @@ Target output minimal:
 ### Backend Environment
 
 ```bash
-python -m venv .venv-backend
+python3.11 -m venv .venv-backend
 source .venv-backend/bin/activate
 python -m pip install -r requirements-backend.txt
 ```

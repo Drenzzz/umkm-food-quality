@@ -93,6 +93,8 @@ Lalu edit `.env` dan sesuaikan minimal:
 - `MODEL_PATH`
 - `CLASS_INDICES_PATH`
 
+Untuk environment backend dan ML, runtime baseline yang dipakai project ini adalah Python `3.11`.
+
 ## Change Policy
 
 Jika ada env var baru di fase berikutnya:
