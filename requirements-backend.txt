@@ -6,6 +6,9 @@ pytest
 psycopg[binary]
 pydantic-settings
 email-validator
+numpy
+pillow
+tensorflow
 python-jose[cryptography]
 passlib[bcrypt]
 bcrypt==4.1.3
