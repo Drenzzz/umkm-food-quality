@@ -89,3 +89,7 @@ Variable yang sudah disiapkan untuk fase awal:
 - `CORS_ORIGINS`
 
 Referensi detail arti tiap variable dan aturan secret ada di `docs/environment_variables.md`.
+
+## Repository Boundary
+
+Aturan file yang boleh masuk repo dan yang harus tetap lokal didokumentasikan di `docs/repo_strategy.md`.

@@ -1,14 +1,18 @@
 .env
+.env.*
 venv/
 .venv-ml/
 .venv-backend/
 __pycache__/
 *.pyc
+.pytest_cache/
 
 dataset/final/
 dataset/working/normalized/**/*.jpg
 dataset/working/merged_public/**/*.jpg
 dataset/archive/**/*.txt
+dataset/metadata/master_metadata.csv
+dataset/metadata/form_image_metadata.csv
 ml/model/*.keras
 ml/model/*.h5
 ml/model/*.ckpt
@@ -18,6 +22,7 @@ ml/model/**/*.keras
 ml/model/**/training_history.json
 ml/model/**/training_log.csv
 ml/model/**/class_indices.json
+ml/model/test_manifest_probe/
 
 .DS_Store
 .idea/
