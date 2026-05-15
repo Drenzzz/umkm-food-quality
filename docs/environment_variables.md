@@ -7,11 +7,11 @@ Dokumen ini menjadi acuan utama untuk environment variable backend + ML pada fas
 | Variable | Required | Example | Purpose |
 |---|---|---|---|
 | `APP_ENV` | Yes | `development` | Menandai konteks runtime aktif seperti development atau production. |
-| `DATABASE_URL` | Yes | `postgresql://app_user:change_me@localhost:5432/umkm_food_quality` | Connection string database backend. |
+| `DATABASE_URL` | Yes | `postgresql://postgres:change_me@localhost:5432/umkm_food_quality` | Connection string database backend. |
 | `SECRET_KEY` | Yes | `change-this-secret-key` | Kunci untuk signing token dan kebutuhan security backend. |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Yes | `60` | Masa berlaku access token dalam menit. |
-| `MODEL_PATH` | Yes | `ml/model/mobilenetv2_umkm.keras` | Lokasi model inference yang akan dibaca backend. |
-| `CLASS_INDICES_PATH` | Yes | `ml/model/class_indices.json` | Lokasi file mapping label hasil training. |
+| `MODEL_PATH` | Yes | `ml/model/exp_001_industry_biscuit_only/model.keras` | Lokasi model inference yang akan dibaca backend. |
+| `CLASS_INDICES_PATH` | Yes | `ml/model/exp_001_industry_biscuit_only/class_indices.json` | Lokasi file mapping label hasil training. |
 | `CORS_ORIGINS` | Yes | `http://localhost:3000,http://localhost:5173` | Daftar origin yang diizinkan untuk akses frontend atau client. |
 
 ## Value Rules
