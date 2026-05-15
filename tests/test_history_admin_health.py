@@ -18,7 +18,7 @@ if TEST_DB_PATH.exists():
     TEST_DB_PATH.unlink()
 
 from app.main import app  # noqa: E402
-from app.db.models import User  # noqa: E402
+from app.db.models import Detection, User  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
 
 
@@ -29,7 +29,16 @@ def promote_user_to_admin(email: str) -> None:
         db.commit()
 
 
+def reset_test_data() -> None:
+    with SessionLocal() as db:
+        db.query(Detection).delete()
+        db.query(User).delete()
+        db.commit()
+
+
 def test_history_admin_and_health_flow() -> None:
+    reset_test_data()
+
     with TestClient(app) as client:
         for email, name in [("user@example.com", "Normal User"), ("admin@example.com", "Admin User")]:
             register_response = client.post(
