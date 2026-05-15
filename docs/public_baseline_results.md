@@ -24,3 +24,15 @@ Dokumen ini merangkum hasil baseline utama per sumber dataset publik.
 - `taterdat_chip` dan `pepsico_potato_lab` tetap menjadi baseline penting untuk domain `keripik`, tetapi hasil akhir harus dibaca bersama eksperimen gabungan keripik berikutnya.
 - Ketiga eksperimen utama menghasilkan artefak lengkap: model, class indices, training history, training log, evaluation report, confusion matrix, threshold review, dan artifact manifest.
 - Hasil ini masih baseline publik dan belum memasukkan data primer lokal dari Google Form, manual collection, atau scraping tambahan.
+
+## Active Public Model
+
+Model aktif sementara untuk backend saat ini adalah:
+
+- `exp_001_industry_biscuit_only`
+
+Alasan pemilihan:
+
+- memiliki `recall_tidak_layak_jual` terbaik pada baseline source yang saat ini tersedia
+- artefak model dan threshold review lengkap
+- paling aman dipakai sebagai backend baseline sementara sebelum eksperimen gabungan diputuskan

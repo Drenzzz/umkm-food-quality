@@ -10,6 +10,10 @@ Model aktif sementara:
 
 - `exp_001_industry_biscuit_only`
 
+Manifest model aktif:
+
+- `ml/model/active_model.json`
+
 ## Recommended Service Layout
 
 ### API
@@ -25,6 +29,7 @@ Model aktif sementara:
 
 - model dibaca dari direktori `ml/model/<experiment>/`
 - backend harus tahu `MODEL_PATH` dan `CLASS_INDICES_PATH`
+- pilihan model aktif sementara harus sinkron dengan `ml/model/active_model.json`
 
 ## Local Run Command
 

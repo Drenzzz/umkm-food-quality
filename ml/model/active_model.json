@@ -1,0 +1,9 @@
+{
+  "experiment_id": "exp_001_industry_biscuit_only",
+  "model_family": "MobileNetV2",
+  "model_path": "ml/model/exp_001_industry_biscuit_only/model.keras",
+  "class_indices_path": "ml/model/exp_001_industry_biscuit_only/class_indices.json",
+  "threshold": 0.5,
+  "selection_reason": "Highest recall for tidak_layak_jual among current public source baselines.",
+  "selection_scope": "temporary_public_backend_baseline"
+}

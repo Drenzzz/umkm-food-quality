@@ -50,6 +50,14 @@ Threshold aktif harus mengikuti artefak model yang dipilih untuk backend.
 
 Backend hanya boleh memakai **satu model aktif** pada satu waktu. Model aktif harus dipilih dari hasil baseline publik yang sudah dievaluasi lengkap.
 
+Model aktif sementara saat ini:
+
+- `exp_001_industry_biscuit_only`
+
+Sumber kebenaran pemilihan model aktif:
+
+- `ml/model/active_model.json`
+
 ## Error Rule
 
 Jika inferensi gagal, backend harus mengembalikan error yang tidak membocorkan detail internal seperti path file lokal, credential, atau stack trace mentah.
