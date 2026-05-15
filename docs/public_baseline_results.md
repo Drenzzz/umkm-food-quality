@@ -20,7 +20,7 @@ Dokumen ini merangkum hasil baseline utama per sumber dataset publik.
 
 ## Notes
 
-- `industry_biscuit` saat ini menjadi baseline paling aman untuk domain `biskuit_kukis`, terutama karena `recall_tidak_layak_jual` mencapai `1.0` pada run baseline ini.
-- `taterdat_chip` dan `pepsico_potato_lab` masih memberi baseline keripik yang lemah pada prioritas recall `tidak_layak_jual`, sehingga eksperimen gabungan keripik menjadi penting untuk step berikutnya.
-- Ketiga eksperimen utama sudah menghasilkan artefak lengkap: model, class indices, training history, training log, evaluation report, confusion matrix, dan threshold review.
+- `industry_biscuit` saat ini menjadi baseline paling aman untuk domain `biskuit_kukis` jika recall `tidak_layak_jual` dijadikan prioritas utama.
+- `taterdat_chip` dan `pepsico_potato_lab` tetap menjadi baseline penting untuk domain `keripik`, tetapi hasil akhir harus dibaca bersama eksperimen gabungan keripik berikutnya.
+- Ketiga eksperimen utama menghasilkan artefak lengkap: model, class indices, training history, training log, evaluation report, confusion matrix, threshold review, dan artifact manifest.
 - Hasil ini masih baseline publik dan belum memasukkan data primer lokal dari Google Form, manual collection, atau scraping tambahan.
