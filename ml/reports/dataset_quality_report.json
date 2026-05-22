@@ -1,0 +1,76 @@
+{
+  "master_metadata_rows": 6825,
+  "split_metadata_rows": 6822,
+  "master_review_status_counts": {
+    "approved": 6822,
+    "pending_review": 3
+  },
+  "master_source_type_counts": {
+    "form": 3,
+    "public": 6822
+  },
+  "split_label_counts": {
+    "layak_jual": 2896,
+    "tidak_layak_jual": 3926
+  },
+  "split_counts": {
+    "test": 1023,
+    "train": 4776,
+    "val": 1023
+  },
+  "product_domain_counts": {
+    "biskuit_kukis": 4900,
+    "keripik": 1922
+  },
+  "dataset_slug_counts": {
+    "industry_biscuit": 4900,
+    "pepsico_potato_lab": 961,
+    "taterdat_chip": 961
+  },
+  "label_by_split": {
+    "test": {
+      "layak_jual": 435,
+      "tidak_layak_jual": 588
+    },
+    "train": {
+      "layak_jual": 2027,
+      "tidak_layak_jual": 2749
+    },
+    "val": {
+      "layak_jual": 434,
+      "tidak_layak_jual": 589
+    }
+  },
+  "domain_by_label": {
+    "biskuit_kukis": {
+      "layak_jual": 1896,
+      "tidak_layak_jual": 3004
+    },
+    "keripik": {
+      "layak_jual": 1000,
+      "tidak_layak_jual": 922
+    }
+  },
+  "missing_file_count": 0,
+  "missing_files_preview": [],
+  "duplicate_relative_path_count": 0,
+  "duplicate_relative_paths_preview": {},
+  "duplicate_image_id_count": 0,
+  "duplicate_image_ids_preview": {},
+  "pending_review_count": 3,
+  "pending_review_preview": [
+    "form_000001",
+    "form_000002",
+    "form_000003"
+  ],
+  "master_rows_missing_split_count": 3,
+  "master_rows_missing_split_preview": [
+    "form_000001",
+    "form_000002",
+    "form_000003"
+  ],
+  "findings": [
+    "pending_review_rows_present",
+    "master_metadata_contains_rows_without_split_assignment"
+  ]
+}
