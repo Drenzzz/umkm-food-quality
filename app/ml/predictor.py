@@ -3,7 +3,6 @@ from __future__ import annotations
 import io
 import json
 from functools import lru_cache
-from pathlib import Path
 
 import httpx
 import numpy as np
@@ -11,7 +10,7 @@ import tensorflow as tf
 from PIL import Image
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
-from app.core.config import get_settings
+from app.ml.model_registry import load_model_registry
 
 
 LABEL_DISPLAY = {
@@ -76,31 +75,14 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
     return preprocess_input(array)
 
 
-def load_threshold(model_dir: Path) -> float:
-    threshold_path = model_dir / "evaluation" / "threshold_review.json"
-    if threshold_path.exists():
-        payload = json.loads(threshold_path.read_text(encoding="utf-8"))
-        return float(payload["recommended_threshold"]["threshold"])
-    return 0.5
-
-
-def load_model_version(model_dir: Path) -> str:
-    manifest_path = model_dir / "artifact_manifest.json"
-    if manifest_path.exists():
-        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-        return payload.get("experiment_id", model_dir.name)
-    return model_dir.name
-
-
 @lru_cache
 def get_predictor() -> Predictor:
-    settings = get_settings()
-    model_path = Path(settings.model_path)
-    class_indices_path = Path(settings.class_indices_path)
-    model_dir = model_path.parent
-
-    model = tf.keras.models.load_model(model_path)
-    class_indices = json.loads(class_indices_path.read_text(encoding="utf-8"))
-    threshold_used = load_threshold(model_dir)
-    model_version = load_model_version(model_dir)
-    return Predictor(model=model, class_indices=class_indices, threshold_used=threshold_used, model_version=model_version)
+    active_model = load_model_registry().active_model
+    model = tf.keras.models.load_model(active_model.model_path)
+    class_indices = json.loads(active_model.class_indices_path.read_text(encoding="utf-8"))
+    return Predictor(
+        model=model,
+        class_indices=class_indices,
+        threshold_used=active_model.threshold,
+        model_version=active_model.experiment_id,
+    )

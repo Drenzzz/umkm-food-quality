@@ -12,3 +12,8 @@ def list_user_history(db: Session, user: User) -> list[Detection]:
 def get_user_detection(db: Session, user: User, detection_id: int) -> Detection | None:
     statement = select(Detection).where(Detection.id == detection_id, Detection.user_id == user.id)
     return db.scalar(statement)
+
+
+def get_latest_detection(db: Session, user: User) -> Detection | None:
+    statement = select(Detection).where(Detection.user_id == user.id).order_by(Detection.created_at.desc()).limit(1)
+    return db.scalar(statement)

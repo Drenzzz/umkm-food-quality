@@ -21,3 +21,8 @@ def get_dashboard_summary(db: Session) -> dict[str, int | str]:
 def list_all_detections(db: Session) -> list[Detection]:
     statement = select(Detection).order_by(Detection.created_at.desc())
     return list(db.scalars(statement))
+
+
+def get_detection_detail(db: Session, detection_id: int) -> Detection | None:
+    statement = select(Detection).where(Detection.id == detection_id)
+    return db.scalar(statement)

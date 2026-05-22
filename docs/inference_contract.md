@@ -58,6 +58,8 @@ Sumber kebenaran pemilihan model aktif:
 
 - `ml/model/active_model.json`
 
+Backend membaca registry model dari `MODEL_REGISTRY_PATH` dan memilih model aktif dari `ACTIVE_MODEL_CONFIG_PATH`. Jika konfigurasi aktif belum tersedia, backend memakai `MODEL_PATH` dan `CLASS_INDICES_PATH` sebagai fallback compatibility.
+
 ## Error Rule
 
 Jika inferensi gagal, backend harus mengembalikan error yang tidak membocorkan detail internal seperti path file lokal, credential, atau stack trace mentah.

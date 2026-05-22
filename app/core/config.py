@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = Field(alias="ACCESS_TOKEN_EXPIRE_MINUTES")
     model_path: str = Field(alias="MODEL_PATH")
     class_indices_path: str = Field(alias="CLASS_INDICES_PATH")
+    model_registry_path: str = Field(default="ml/model", alias="MODEL_REGISTRY_PATH")
+    active_model_config_path: str = Field(default="ml/model/active_model.json", alias="ACTIVE_MODEL_CONFIG_PATH")
     cors_origins: str = Field(alias="CORS_ORIGINS")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")

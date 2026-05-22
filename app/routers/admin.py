@@ -1,11 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.security import require_admin
 from app.db.models import User
 from app.db.session import get_db
-from app.schemas.admin import AdminDashboardResponse, AdminDetectionItemResponse, AdminDetectionListResponse
-from app.services.admin_service import get_dashboard_summary, list_all_detections
+from app.schemas.admin import (
+    AdminDashboardResponse,
+    AdminDetectionDetailResponse,
+    AdminDetectionItemResponse,
+    AdminDetectionListResponse,
+)
+from app.services.admin_service import get_dashboard_summary, get_detection_detail, list_all_detections
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -21,3 +26,15 @@ def read_admin_dashboard(_: User = Depends(require_admin), db: Session = Depends
 def read_admin_detections(_: User = Depends(require_admin), db: Session = Depends(get_db)) -> AdminDetectionListResponse:
     items = [AdminDetectionItemResponse.model_validate(item) for item in list_all_detections(db)]
     return AdminDetectionListResponse(items=items)
+
+
+@router.get("/detections/{detection_id}", response_model=AdminDetectionDetailResponse)
+def read_admin_detection_detail(
+    detection_id: int,
+    _: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AdminDetectionDetailResponse:
+    detection = get_detection_detail(db, detection_id)
+    if detection is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Detection not found")
+    return AdminDetectionDetailResponse.model_validate(detection)
