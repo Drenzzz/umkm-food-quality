@@ -192,6 +192,27 @@ Success response:
 }
 ```
 
+### `GET /admin/models`
+
+Success response:
+
+```json
+{
+  "active_model_id": "exp_001_industry_biscuit_only",
+  "models": [
+    {
+      "experiment_id": "exp_001_industry_biscuit_only",
+      "model_family": "MobileNetV2",
+      "threshold": 0.5,
+      "status": "trained",
+      "is_active": true,
+      "model_file_available": true,
+      "class_indices_file_available": true
+    }
+  ]
+}
+```
+
 ## Health Contract
 
 ### `GET /health`

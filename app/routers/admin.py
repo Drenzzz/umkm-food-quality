@@ -9,8 +9,9 @@ from app.schemas.admin import (
     AdminDetectionDetailResponse,
     AdminDetectionItemResponse,
     AdminDetectionListResponse,
+    AdminModelRegistryResponse,
 )
-from app.services.admin_service import get_dashboard_summary, get_detection_detail, list_all_detections
+from app.services.admin_service import get_dashboard_summary, get_detection_detail, get_model_registry_metadata, list_all_detections
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -20,6 +21,11 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 def read_admin_dashboard(_: User = Depends(require_admin), db: Session = Depends(get_db)) -> AdminDashboardResponse:
     summary = get_dashboard_summary(db)
     return AdminDashboardResponse(**summary)
+
+
+@router.get("/models", response_model=AdminModelRegistryResponse)
+def read_admin_models(_: User = Depends(require_admin)) -> AdminModelRegistryResponse:
+    return get_model_registry_metadata()
 
 
 @router.get("/detections", response_model=AdminDetectionListResponse)

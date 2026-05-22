@@ -72,6 +72,21 @@ class AdminDetectionListResponse(BaseModel):
     items: list[AdminDetectionItemResponse]
 
 
+class AdminModelItemResponse(BaseModel):
+    experiment_id: str
+    model_family: str
+    threshold: float
+    status: str
+    is_active: bool
+    model_file_available: bool
+    class_indices_file_available: bool
+
+
+class AdminModelRegistryResponse(BaseModel):
+    active_model_id: str
+    models: list[AdminModelItemResponse]
+
+
 class HealthResponse(BaseModel):
     status: str
     database: str
