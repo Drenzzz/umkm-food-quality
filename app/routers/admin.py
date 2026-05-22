@@ -11,7 +11,13 @@ from app.schemas.admin import (
     AdminDetectionListResponse,
     AdminModelRegistryResponse,
 )
-from app.services.admin_service import get_dashboard_summary, get_detection_detail, get_model_registry_metadata, list_all_detections
+from app.services.admin_service import (
+    build_detection_detail_response,
+    get_dashboard_summary,
+    get_detection_detail,
+    get_model_registry_metadata,
+    list_all_detections,
+)
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -43,4 +49,4 @@ def read_admin_detection_detail(
     detection = get_detection_detail(db, detection_id)
     if detection is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Detection not found")
-    return AdminDetectionDetailResponse.model_validate(detection)
+    return build_detection_detail_response(detection)

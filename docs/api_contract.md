@@ -192,6 +192,32 @@ Success response:
 }
 ```
 
+### `GET /admin/detections/{detection_id}`
+
+Success response:
+
+```json
+{
+  "id": 1,
+  "user_id": 1,
+  "label": "Tidak Layak Jual",
+  "label_key": "tidak_layak_jual",
+  "confidence_score": 60.05,
+  "raw_score": 0.6005,
+  "threshold_used": 0.5,
+  "model_version": "exp_001_industry_biscuit_only",
+  "explanation": "string",
+  "image_url": "https://example.com/image.jpg",
+  "created_at": "2026-05-11T12:00:00Z",
+  "active_model_id": "exp_001_industry_biscuit_only",
+  "prediction_mode": "single_active_model",
+  "class_indices": {
+    "layak_jual": 0,
+    "tidak_layak_jual": 1
+  }
+}
+```
+
 ### `GET /admin/models`
 
 Success response:

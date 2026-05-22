@@ -1,9 +1,11 @@
+import json
+
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db.models import Detection
 from app.ml.model_registry import ModelArtifact, load_model_registry
-from app.schemas.admin import AdminModelItemResponse, AdminModelRegistryResponse
+from app.schemas.admin import AdminDetectionDetailResponse, AdminModelItemResponse, AdminModelRegistryResponse
 
 
 def get_dashboard_summary(db: Session) -> dict[str, int | str]:
@@ -29,6 +31,27 @@ def get_detection_detail(db: Session, detection_id: int) -> Detection | None:
     return db.scalar(statement)
 
 
+def build_detection_detail_response(detection: Detection) -> AdminDetectionDetailResponse:
+    registry = load_model_registry()
+    active_model = registry.active_model
+    return AdminDetectionDetailResponse(
+        id=detection.id,
+        user_id=detection.user_id,
+        label=detection.label,
+        label_key=detection.label_key,
+        confidence_score=detection.confidence_score,
+        raw_score=detection.raw_score,
+        threshold_used=detection.threshold_used,
+        model_version=detection.model_version,
+        explanation=detection.explanation,
+        image_url=detection.image_url,
+        created_at=detection.created_at,
+        active_model_id=active_model.experiment_id,
+        prediction_mode="single_active_model",
+        class_indices=load_class_indices(active_model),
+    )
+
+
 def get_model_registry_metadata() -> AdminModelRegistryResponse:
     registry = load_model_registry()
     return AdminModelRegistryResponse(
@@ -47,3 +70,10 @@ def build_model_item(model: ModelArtifact) -> AdminModelItemResponse:
         model_file_available=model.model_path.exists(),
         class_indices_file_available=model.class_indices_path.exists(),
     )
+
+
+def load_class_indices(model: ModelArtifact) -> dict[str, int]:
+    if not model.class_indices_path.exists():
+        return {}
+    payload = json.loads(model.class_indices_path.read_text(encoding="utf-8"))
+    return {str(key): int(value) for key, value in payload.items()}

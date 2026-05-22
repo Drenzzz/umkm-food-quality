@@ -66,6 +66,9 @@ class AdminDetectionDetailResponse(BaseModel):
     explanation: str
     image_url: str
     created_at: datetime
+    active_model_id: str
+    prediction_mode: str
+    class_indices: dict[str, int]
 
 
 class AdminDetectionListResponse(BaseModel):
