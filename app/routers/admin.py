@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.security import require_admin
 from app.db.models import User
 from app.db.session import get_db
+from app.ml.model_registry import load_model_registry
+from app.ml.predictor import download_image, get_predictor_map
 from app.schemas.admin import (
     AdminDashboardResponse,
     AdminDetectionDetailResponse,
@@ -11,6 +14,7 @@ from app.schemas.admin import (
     AdminDetectionListResponse,
     AdminModelRegistryResponse,
 )
+from app.schemas.detect import DetectComparisonResponse, DetectRequest, ModelComparisonItemResponse
 from app.services.admin_service import (
     build_detection_detail_response,
     get_dashboard_summary,
@@ -32,6 +36,45 @@ def read_admin_dashboard(_: User = Depends(require_admin), db: Session = Depends
 @router.get("/models", response_model=AdminModelRegistryResponse)
 def read_admin_models(_: User = Depends(require_admin)) -> AdminModelRegistryResponse:
     return get_model_registry_metadata()
+
+
+@router.post("/detect/compare", response_model=DetectComparisonResponse)
+async def compare_admin_detection_models(
+    payload: DetectRequest,
+    _: User = Depends(require_admin),
+) -> DetectComparisonResponse:
+    settings = get_settings()
+    if not settings.enable_multi_model_comparison:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Multi-model comparison is disabled")
+
+    registry = load_model_registry()
+    image_bytes = await download_image(str(payload.image_url))
+    predictor_map = get_predictor_map()
+
+    predictions: list[ModelComparisonItemResponse] = []
+    for model_artifact in registry.models:
+        predictor = predictor_map[model_artifact.experiment_id]
+        result = predictor.predict_from_image_bytes(image_bytes)
+        predictions.append(
+            ModelComparisonItemResponse(
+                model_version=model_artifact.experiment_id,
+                label=str(result["label"]),
+                label_key=str(result["label_key"]),
+                confidence_score=float(result["confidence_score"]),
+                raw_score=float(result["raw_score"]),
+                threshold_used=float(result["threshold_used"]),
+                explanation=str(result["explanation"]),
+                is_active=model_artifact.is_active,
+                passed_quality_gate=model_artifact.passed_quality_gate,
+                collapse_flags=model_artifact.collapse_flags,
+            )
+        )
+
+    return DetectComparisonResponse(
+        active_model_id=registry.active_model.experiment_id,
+        image_url=str(payload.image_url),
+        predictions=predictions,
+    )
 
 
 @router.get("/detections", response_model=AdminDetectionListResponse)

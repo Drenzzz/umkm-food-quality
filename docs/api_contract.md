@@ -246,6 +246,41 @@ Success response:
 }
 ```
 
+### `POST /admin/detect/compare`
+
+Request body:
+
+```json
+{
+  "image_url": "https://example.com/image.jpg"
+}
+```
+
+Success response:
+
+```json
+{
+  "active_model_id": "exp_001_industry_biscuit_only",
+  "image_url": "https://example.com/image.jpg",
+  "predictions": [
+    {
+      "model_version": "exp_001_industry_biscuit_only",
+      "label": "Tidak Layak Jual",
+      "label_key": "tidak_layak_jual",
+      "confidence_score": 60.05,
+      "raw_score": 0.600506,
+      "threshold_used": 0.5,
+      "explanation": "string",
+      "is_active": true,
+      "passed_quality_gate": false,
+      "collapse_flags": [
+        "constant_raw_score"
+      ]
+    }
+  ]
+}
+```
+
 ## Health Contract
 
 ### `GET /health`

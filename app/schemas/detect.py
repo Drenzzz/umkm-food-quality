@@ -20,3 +20,22 @@ class DetectResponse(BaseModel):
     explanation: str
     image_url: str
     created_at: datetime
+
+
+class ModelComparisonItemResponse(BaseModel):
+    model_version: str
+    label: str
+    label_key: str
+    confidence_score: float
+    raw_score: float
+    threshold_used: float
+    explanation: str
+    is_active: bool
+    passed_quality_gate: bool | None
+    collapse_flags: list[str]
+
+
+class DetectComparisonResponse(BaseModel):
+    active_model_id: str
+    image_url: str
+    predictions: list[ModelComparisonItemResponse]

@@ -35,6 +35,9 @@ class Predictor:
 
     async def predict_from_url(self, image_url: str) -> dict[str, float | str]:
         image_bytes = await download_image(image_url)
+        return self.predict_from_image_bytes(image_bytes)
+
+    def predict_from_image_bytes(self, image_bytes: bytes) -> dict[str, float | str]:
         tensor = preprocess_image(image_bytes)
         raw_score = float(self.model.predict(tensor, verbose=0).flatten()[0])
         return self._map_prediction(raw_score)
@@ -86,3 +89,19 @@ def get_predictor() -> Predictor:
         threshold_used=active_model.threshold,
         model_version=active_model.experiment_id,
     )
+
+
+@lru_cache
+def get_predictor_map() -> dict[str, Predictor]:
+    registry = load_model_registry()
+    predictors: dict[str, Predictor] = {}
+    for model_artifact in registry.models:
+        keras_model = tf.keras.models.load_model(model_artifact.model_path)
+        class_indices = json.loads(model_artifact.class_indices_path.read_text(encoding="utf-8"))
+        predictors[model_artifact.experiment_id] = Predictor(
+            model=keras_model,
+            class_indices=class_indices,
+            threshold_used=model_artifact.threshold,
+            model_version=model_artifact.experiment_id,
+        )
+    return predictors

@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     active_model_config_path: str = Field(default="ml/model/active_model.json", alias="ACTIVE_MODEL_CONFIG_PATH")
     model_quality_report_path: str = Field(default="ml/model/model_quality_report.json", alias="MODEL_QUALITY_REPORT_PATH")
     model_quality_strict: bool = Field(default=False, alias="MODEL_QUALITY_STRICT")
+    enable_multi_model_comparison: bool = Field(default=False, alias="ENABLE_MULTI_MODEL_COMPARISON")
     cors_origins: str = Field(alias="CORS_ORIGINS")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
