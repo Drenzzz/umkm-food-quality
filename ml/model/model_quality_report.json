@@ -1,0 +1,87 @@
+{
+  "quality_gate": {
+    "raw_score_unique_minimum": 2,
+    "dominant_prediction_share_maximum": 0.95,
+    "required_recall_labels": [
+      "layak_jual",
+      "tidak_layak_jual"
+    ]
+  },
+  "models": [
+    {
+      "model_id": "exp_001_industry_biscuit_only",
+      "sample_count": 500,
+      "raw_score_min": 0.600506,
+      "raw_score_max": 0.600506,
+      "raw_score_unique_count": 1,
+      "predicted_label_counts": {
+        "tidak_layak_jual": 500
+      },
+      "expected_label_counts": {
+        "layak_jual": 285,
+        "tidak_layak_jual": 215
+      },
+      "recall_by_label": {
+        "layak_jual": 0.0,
+        "tidak_layak_jual": 1.0
+      },
+      "dominant_prediction_share": 1.0,
+      "collapse_flags": [
+        "constant_raw_score",
+        "single_class_prediction_dominance",
+        "zero_recall_layak_jual"
+      ],
+      "passed_quality_gate": false
+    },
+    {
+      "model_id": "exp_002_taterdat_chip_only",
+      "sample_count": 500,
+      "raw_score_min": 0.495019,
+      "raw_score_max": 0.495019,
+      "raw_score_unique_count": 1,
+      "predicted_label_counts": {
+        "tidak_layak_jual": 500
+      },
+      "expected_label_counts": {
+        "layak_jual": 285,
+        "tidak_layak_jual": 215
+      },
+      "recall_by_label": {
+        "layak_jual": 0.0,
+        "tidak_layak_jual": 1.0
+      },
+      "dominant_prediction_share": 1.0,
+      "collapse_flags": [
+        "constant_raw_score",
+        "single_class_prediction_dominance",
+        "zero_recall_layak_jual"
+      ],
+      "passed_quality_gate": false
+    },
+    {
+      "model_id": "exp_003_pepsico_only",
+      "sample_count": 500,
+      "raw_score_min": 0.491576,
+      "raw_score_max": 0.491576,
+      "raw_score_unique_count": 1,
+      "predicted_label_counts": {
+        "tidak_layak_jual": 500
+      },
+      "expected_label_counts": {
+        "layak_jual": 285,
+        "tidak_layak_jual": 215
+      },
+      "recall_by_label": {
+        "layak_jual": 0.0,
+        "tidak_layak_jual": 1.0
+      },
+      "dominant_prediction_share": 1.0,
+      "collapse_flags": [
+        "constant_raw_score",
+        "single_class_prediction_dominance",
+        "zero_recall_layak_jual"
+      ],
+      "passed_quality_gate": false
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import argparse
 import csv
 import io
 import json
+from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -47,6 +48,21 @@ class PredictionOutput:
     dataset_slug: str
 
 
+@dataclass(frozen=True)
+class ModelQualitySummary:
+    model_id: str
+    sample_count: int
+    raw_score_min: float
+    raw_score_max: float
+    raw_score_unique_count: int
+    predicted_label_counts: dict[str, int]
+    expected_label_counts: dict[str, int]
+    recall_by_label: dict[str, float]
+    dominant_prediction_share: float
+    collapse_flags: list[str]
+    passed_quality_gate: bool
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate raw prediction outputs for registered model artifacts.")
     parser.add_argument("--metadata", default="dataset/metadata/split_metadata.csv", help="CSV metadata path.")
@@ -56,6 +72,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=10, help="Maximum number of images to evaluate.")
     parser.add_argument("--model-id", default="all", help="Model experiment id to evaluate, or 'all'.")
     parser.add_argument("--output", default="", help="Optional JSON output path.")
+    parser.add_argument("--quality-report", default="", help="Optional model quality report JSON path.")
     return parser.parse_args()
 
 
@@ -199,6 +216,67 @@ def build_payload(outputs: list[PredictionOutput]) -> dict[str, Any]:
     }
 
 
+def build_quality_report(outputs: list[PredictionOutput]) -> dict[str, Any]:
+    grouped: dict[str, list[PredictionOutput]] = defaultdict(list)
+    for output in outputs:
+        grouped[output.model_id].append(output)
+
+    summaries = [build_quality_summary(model_id, model_outputs) for model_id, model_outputs in sorted(grouped.items())]
+    return {
+        "quality_gate": {
+            "raw_score_unique_minimum": 2,
+            "dominant_prediction_share_maximum": 0.95,
+            "required_recall_labels": ["layak_jual", "tidak_layak_jual"],
+        },
+        "models": [asdict(summary) for summary in summaries],
+    }
+
+
+def build_quality_summary(model_id: str, outputs: list[PredictionOutput]) -> ModelQualitySummary:
+    scores = [output.raw_score for output in outputs]
+    predicted_counts = Counter(output.predicted_label for output in outputs)
+    expected_counts = Counter(output.expected_label for output in outputs)
+    recall_by_label = calculate_recall_by_label(outputs, expected_counts)
+    dominant_prediction_share = max(predicted_counts.values()) / len(outputs)
+    collapse_flags = build_collapse_flags(scores, dominant_prediction_share, recall_by_label)
+    return ModelQualitySummary(
+        model_id=model_id,
+        sample_count=len(outputs),
+        raw_score_min=min(scores),
+        raw_score_max=max(scores),
+        raw_score_unique_count=len(set(scores)),
+        predicted_label_counts=dict(predicted_counts),
+        expected_label_counts=dict(expected_counts),
+        recall_by_label=recall_by_label,
+        dominant_prediction_share=round(dominant_prediction_share, 6),
+        collapse_flags=collapse_flags,
+        passed_quality_gate=not collapse_flags,
+    )
+
+
+def calculate_recall_by_label(outputs: list[PredictionOutput], expected_counts: Counter[str]) -> dict[str, float]:
+    correct_counts: Counter[str] = Counter()
+    for output in outputs:
+        if output.expected_label == output.predicted_label:
+            correct_counts[output.expected_label] += 1
+    return {
+        label: round(correct_counts[label] / total, 6) if total else 0.0
+        for label, total in sorted(expected_counts.items())
+    }
+
+
+def build_collapse_flags(scores: list[float], dominant_prediction_share: float, recall_by_label: dict[str, float]) -> list[str]:
+    flags: list[str] = []
+    if len(set(scores)) <= 1:
+        flags.append("constant_raw_score")
+    if dominant_prediction_share >= 0.95:
+        flags.append("single_class_prediction_dominance")
+    for label, recall in recall_by_label.items():
+        if recall == 0:
+            flags.append(f"zero_recall_{label}")
+    return flags
+
+
 def main() -> None:
     args = parse_args()
     samples = load_samples(Path(args.metadata), args.split, args.limit)
@@ -211,6 +289,9 @@ def main() -> None:
     text = json.dumps(payload, indent=2)
     if args.output:
         Path(args.output).write_text(f"{text}\n", encoding="utf-8")
+    if args.quality_report:
+        quality_report = build_quality_report(outputs)
+        Path(args.quality_report).write_text(f"{json.dumps(quality_report, indent=2)}\n", encoding="utf-8")
     print(text)
 
 
