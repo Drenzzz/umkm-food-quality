@@ -83,6 +83,9 @@ class AdminModelItemResponse(BaseModel):
     is_active: bool
     model_file_available: bool
     class_indices_file_available: bool
+    passed_quality_gate: bool | None
+    collapse_flags: list[str]
+    quality_sample_count: int | None
 
 
 class AdminModelRegistryResponse(BaseModel):

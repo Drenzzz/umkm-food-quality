@@ -69,6 +69,9 @@ def build_model_item(model: ModelArtifact) -> AdminModelItemResponse:
         is_active=model.is_active,
         model_file_available=model.model_path.exists(),
         class_indices_file_available=model.class_indices_path.exists(),
+        passed_quality_gate=model.passed_quality_gate,
+        collapse_flags=model.collapse_flags,
+        quality_sample_count=model.quality_sample_count,
     )
 
 

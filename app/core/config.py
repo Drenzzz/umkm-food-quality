@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     class_indices_path: str = Field(alias="CLASS_INDICES_PATH")
     model_registry_path: str = Field(default="ml/model", alias="MODEL_REGISTRY_PATH")
     active_model_config_path: str = Field(default="ml/model/active_model.json", alias="ACTIVE_MODEL_CONFIG_PATH")
+    model_quality_report_path: str = Field(default="ml/model/model_quality_report.json", alias="MODEL_QUALITY_REPORT_PATH")
+    model_quality_strict: bool = Field(default=False, alias="MODEL_QUALITY_STRICT")
     cors_origins: str = Field(alias="CORS_ORIGINS")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")

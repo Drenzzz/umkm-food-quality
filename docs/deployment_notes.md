@@ -45,6 +45,10 @@ Manifest model aktif:
 - `ACCESS_TOKEN_EXPIRE_MINUTES`
 - `MODEL_PATH`
 - `CLASS_INDICES_PATH`
+- `MODEL_REGISTRY_PATH`
+- `ACTIVE_MODEL_CONFIG_PATH`
+- `MODEL_QUALITY_REPORT_PATH`
+- `MODEL_QUALITY_STRICT`
 - `CORS_ORIGINS`
 
 ## Deployment Checklist
@@ -53,7 +57,9 @@ Manifest model aktif:
 2. pastikan `MODEL_PATH` menunjuk model yang benar
 3. pastikan `CLASS_INDICES_PATH` cocok dengan model aktif
 4. pastikan threshold review untuk model aktif sudah ada
-5. pastikan auth endpoint dan detect endpoint lolos smoke test
+5. pastikan `MODEL_QUALITY_REPORT_PATH` tersedia dan model aktif tidak gagal quality gate
+6. gunakan `MODEL_QUALITY_STRICT=true` hanya jika runtime harus gagal saat model aktif tidak lolos quality gate
+7. pastikan auth endpoint dan detect endpoint lolos smoke test
 
 ## Fallback Rule
 

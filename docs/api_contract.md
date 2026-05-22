@@ -233,7 +233,14 @@ Success response:
       "status": "trained",
       "is_active": true,
       "model_file_available": true,
-      "class_indices_file_available": true
+      "class_indices_file_available": true,
+      "passed_quality_gate": false,
+      "collapse_flags": [
+        "constant_raw_score",
+        "single_class_prediction_dominance",
+        "zero_recall_layak_jual"
+      ],
+      "quality_sample_count": 500
     }
   ]
 }
