@@ -54,8 +54,6 @@ def main() -> int:
                 "ml/train.py",
                 "--experiment",
                 experiment_name,
-                "--weights",
-                "none",
                 "--feature-epochs",
                 str(args.feature_epochs),
                 "--finetune-epochs",

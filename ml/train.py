@@ -4,9 +4,11 @@ import argparse
 import csv
 import json
 import sys
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.applications import MobileNetV2
@@ -116,12 +118,14 @@ def main() -> int:
     split_rows = prepare_splits(rows)
     train_ds = build_dataset(split_rows["train"], args.image_size, args.batch_size, training=True)
     val_ds = build_dataset(split_rows["val"], args.image_size, args.batch_size, training=False)
+    class_weight = build_class_weight(split_rows["train"])
 
     model, backbone = build_model(args.image_size, args.weights)
 
     print(f"Experiment: {experiment['experiment_id']}")
     print(f"Train samples: {len(split_rows['train'])}")
     print(f"Validation samples: {len(split_rows['val'])}")
+    print(f"Train class weight: {class_weight}")
     print(f"Weights: {args.weights}")
     print(f"Output dir: {output_dir}")
 
@@ -141,6 +145,7 @@ def main() -> int:
         validation_data=val_ds,
         epochs=args.feature_epochs,
         callbacks=callbacks,
+        class_weight=class_weight,
         verbose=2,
     )
 
@@ -151,8 +156,12 @@ def main() -> int:
         validation_data=val_ds,
         epochs=args.finetune_epochs,
         callbacks=callbacks,
+        class_weight=class_weight,
         verbose=2,
     )
+
+    validation_probs = model.predict(val_ds, verbose=0).flatten()
+    assert_model_quality(split_rows["val"], validation_probs, 0.5)
 
     model.save(output_dir / "model.keras")
     (output_dir / "class_indices.json").write_text(json.dumps(LABEL_TO_INDEX, indent=2), encoding="utf-8")
@@ -236,6 +245,8 @@ def prepare_splits(rows: list[SampleRow]) -> dict[str, list[SampleRow]]:
         grouped["train"] = fallback_train
         grouped["val"] = fallback_val
 
+    validate_split_label_coverage(grouped)
+
     return grouped
 
 
@@ -281,6 +292,11 @@ def build_dataset(rows: list[SampleRow], image_size: int, batch_size: int, train
         lambda image_path, label: load_and_preprocess_image(image_path, label, image_size),
         num_parallel_calls=tf.data.AUTOTUNE,
     )
+    if training:
+        dataset = dataset.map(
+            lambda image, label: (augment_image(image), label),
+            num_parallel_calls=tf.data.AUTOTUNE,
+        )
     dataset = dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
     return dataset
 
@@ -291,6 +307,72 @@ def load_and_preprocess_image(image_path: tf.Tensor, label: tf.Tensor, image_siz
     image = tf.image.resize(image, [image_size, image_size])
     image = preprocess_input(tf.cast(image, tf.float32))
     return image, label
+
+
+def build_class_weight(train_rows: list[SampleRow]) -> dict[int, float]:
+    counts = Counter(LABEL_TO_INDEX[row.final_label] for row in train_rows)
+    total = sum(counts.values())
+    class_weight: dict[int, float] = {}
+    for label_index in sorted(LABEL_TO_INDEX.values()):
+        count = counts.get(label_index, 0)
+        if count == 0:
+            raise ValueError(f"Training split is missing class index {label_index}")
+        class_weight[label_index] = round(total / (len(LABEL_TO_INDEX) * count), 6)
+    return class_weight
+
+
+def validate_split_label_coverage(grouped: dict[str, list[SampleRow]]) -> None:
+    train_labels = {row.final_label for row in grouped["train"]}
+    val_labels = {row.final_label for row in grouped["val"]}
+    missing_in_train = set(LABEL_TO_INDEX) - train_labels
+    if missing_in_train:
+        raise ValueError(f"Training split is missing labels: {sorted(missing_in_train)}")
+
+    missing_in_val = set(LABEL_TO_INDEX) - val_labels
+    if missing_in_val:
+        raise ValueError(f"Validation split is missing labels: {sorted(missing_in_val)}")
+
+
+def augment_image(image: tf.Tensor) -> tf.Tensor:
+    image = tf.image.random_flip_left_right(image)
+    image = tf.image.random_flip_up_down(image)
+    image = tf.image.random_brightness(image, max_delta=0.15)
+    image = tf.image.random_contrast(image, lower=0.9, upper=1.1)
+    return tf.clip_by_value(image, -1.0, 1.0)
+
+
+def assert_model_quality(validation_rows: list[SampleRow], probabilities: np.ndarray, threshold: float) -> None:
+    labels = np.array([LABEL_TO_INDEX[row.final_label] for row in validation_rows], dtype=np.int32)
+    predictions = (probabilities >= threshold).astype(np.int32)
+    unique_scores = len({round(float(score), 6) for score in probabilities.tolist()})
+    predicted_counts = Counter(int(prediction) for prediction in predictions.tolist())
+    dominant_share = max(predicted_counts.values()) / len(predictions)
+    recall_by_label = compute_recall_by_label(labels, predictions)
+
+    failures: list[str] = []
+    if unique_scores <= 1:
+        failures.append("constant_raw_score")
+    if dominant_share >= 0.95:
+        failures.append("single_class_prediction_dominance")
+    for label_name, recall in recall_by_label.items():
+        if recall == 0:
+            failures.append(f"zero_recall_{label_name}")
+
+    if failures:
+        raise RuntimeError(f"Training quality gate failed: {', '.join(failures)}")
+
+
+def compute_recall_by_label(labels: np.ndarray, predictions: np.ndarray) -> dict[str, float]:
+    scores: dict[str, float] = {}
+    for label_name, label_index in LABEL_TO_INDEX.items():
+        mask = labels == label_index
+        total = int(mask.sum())
+        if total == 0:
+            scores[label_name] = 0.0
+            continue
+        correct = int((predictions[mask] == label_index).sum())
+        scores[label_name] = round(correct / total, 6)
+    return scores
 
 
 def build_model(image_size: int, weights: str) -> tuple[Model, Model]:
