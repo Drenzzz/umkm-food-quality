@@ -52,7 +52,7 @@ Backend hanya boleh memakai **satu model aktif** pada satu waktu. Model aktif ha
 
 Model aktif sementara saat ini:
 
-- `exp_001_industry_biscuit_only`
+- `exp_005_combined_public_baseline`
 
 Sumber kebenaran pemilihan model aktif:
 

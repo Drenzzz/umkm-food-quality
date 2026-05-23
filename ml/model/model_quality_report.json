@@ -11,27 +11,24 @@
     {
       "model_id": "exp_001_industry_biscuit_only",
       "sample_count": 500,
-      "raw_score_min": 0.600506,
-      "raw_score_max": 0.600506,
-      "raw_score_unique_count": 1,
+      "raw_score_min": 1e-06,
+      "raw_score_max": 1.0,
+      "raw_score_unique_count": 284,
       "predicted_label_counts": {
-        "tidak_layak_jual": 500
+        "layak_jual": 388,
+        "tidak_layak_jual": 112
       },
       "expected_label_counts": {
         "layak_jual": 285,
         "tidak_layak_jual": 215
       },
       "recall_by_label": {
-        "layak_jual": 0.0,
-        "tidak_layak_jual": 1.0
+        "layak_jual": 1.0,
+        "tidak_layak_jual": 0.52093
       },
-      "dominant_prediction_share": 1.0,
-      "collapse_flags": [
-        "constant_raw_score",
-        "single_class_prediction_dominance",
-        "zero_recall_layak_jual"
-      ],
-      "passed_quality_gate": false
+      "dominant_prediction_share": 0.776,
+      "collapse_flags": [],
+      "passed_quality_gate": true
     },
     {
       "model_id": "exp_002_taterdat_chip_only",
@@ -82,6 +79,28 @@
         "zero_recall_layak_jual"
       ],
       "passed_quality_gate": false
+    },
+    {
+      "model_id": "exp_005_combined_public_baseline",
+      "sample_count": 500,
+      "raw_score_min": 0.0,
+      "raw_score_max": 1.0,
+      "raw_score_unique_count": 336,
+      "predicted_label_counts": {
+        "layak_jual": 349,
+        "tidak_layak_jual": 151
+      },
+      "expected_label_counts": {
+        "layak_jual": 285,
+        "tidak_layak_jual": 215
+      },
+      "recall_by_label": {
+        "layak_jual": 1.0,
+        "tidak_layak_jual": 0.702326
+      },
+      "dominant_prediction_share": 0.698,
+      "collapse_flags": [],
+      "passed_quality_gate": true
     }
   ]
 }

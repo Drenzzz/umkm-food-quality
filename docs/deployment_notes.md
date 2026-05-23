@@ -8,7 +8,7 @@ Target deploy saat ini adalah backend API yang memakai satu public baseline mode
 
 Model aktif sementara:
 
-- `exp_001_industry_biscuit_only`
+- `exp_005_combined_public_baseline`
 
 Manifest model aktif:
 

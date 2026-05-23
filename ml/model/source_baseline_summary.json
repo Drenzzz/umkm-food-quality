@@ -25,5 +25,14 @@
     "f1_macro": 0.3425,
     "recall_tidak_layak_jual": 0.0,
     "recommended_threshold": 0.4
+  },
+  "exp_005_combined_public_baseline": {
+    "used_split": "test",
+    "accuracy": 0.7898,
+    "precision_macro": 0.8346,
+    "recall_macro": 0.8172,
+    "f1_macro": 0.7891,
+    "recall_tidak_layak_jual": 0.6344,
+    "recommended_threshold": 0.1
   }
 }
