@@ -112,7 +112,7 @@ Success response:
   "confidence_score": 91.2,
   "raw_score": 0.912,
   "threshold_used": 0.4,
-  "model_version": "exp_001_industry_biscuit_only",
+  "model_version": "exp_005_combined_public_baseline",
   "explanation": "string",
   "image_url": "https://example.com/image.jpg",
   "created_at": "2026-05-11T12:00:00Z"
@@ -150,7 +150,7 @@ Success response:
   "confidence_score": 73.4,
   "raw_score": 0.266,
   "threshold_used": 0.4,
-  "model_version": "exp_001_industry_biscuit_only",
+  "model_version": "exp_005_combined_public_baseline",
   "explanation": "string",
   "image_url": "https://example.com/image.jpg",
   "created_at": "2026-05-11T12:00:00Z"
@@ -168,7 +168,7 @@ Success response:
   "total_detections": 100,
   "total_layak_jual": 45,
   "total_tidak_layak_jual": 55,
-  "active_model_version": "exp_001_industry_biscuit_only"
+  "active_model_version": "exp_005_combined_public_baseline"
 }
 ```
 
@@ -185,7 +185,7 @@ Success response:
       "label": "Layak Jual",
       "label_key": "layak_jual",
       "confidence_score": 73.4,
-      "model_version": "exp_001_industry_biscuit_only",
+      "model_version": "exp_005_combined_public_baseline",
       "created_at": "2026-05-11T12:00:00Z"
     }
   ]
@@ -202,14 +202,14 @@ Success response:
   "user_id": 1,
   "label": "Tidak Layak Jual",
   "label_key": "tidak_layak_jual",
-  "confidence_score": 60.05,
-  "raw_score": 0.6005,
-  "threshold_used": 0.5,
-  "model_version": "exp_001_industry_biscuit_only",
+  "confidence_score": 78.98,
+  "raw_score": 0.634354,
+  "threshold_used": 0.1,
+  "model_version": "exp_005_combined_public_baseline",
   "explanation": "string",
   "image_url": "https://example.com/image.jpg",
   "created_at": "2026-05-11T12:00:00Z",
-  "active_model_id": "exp_001_industry_biscuit_only",
+  "active_model_id": "exp_005_combined_public_baseline",
   "prediction_mode": "single_active_model",
   "class_indices": {
     "layak_jual": 0,
@@ -224,22 +224,18 @@ Success response:
 
 ```json
 {
-  "active_model_id": "exp_001_industry_biscuit_only",
+  "active_model_id": "exp_005_combined_public_baseline",
   "models": [
     {
-      "experiment_id": "exp_001_industry_biscuit_only",
+      "experiment_id": "exp_005_combined_public_baseline",
       "model_family": "MobileNetV2",
-      "threshold": 0.5,
+      "threshold": 0.1,
       "status": "trained",
       "is_active": true,
       "model_file_available": true,
       "class_indices_file_available": true,
-      "passed_quality_gate": false,
-      "collapse_flags": [
-        "constant_raw_score",
-        "single_class_prediction_dominance",
-        "zero_recall_layak_jual"
-      ],
+      "passed_quality_gate": true,
+      "collapse_flags": [],
       "quality_sample_count": 500
     }
   ]
@@ -260,22 +256,20 @@ Success response:
 
 ```json
 {
-  "active_model_id": "exp_001_industry_biscuit_only",
+  "active_model_id": "exp_005_combined_public_baseline",
   "image_url": "https://example.com/image.jpg",
   "predictions": [
     {
-      "model_version": "exp_001_industry_biscuit_only",
+      "model_version": "exp_005_combined_public_baseline",
       "label": "Tidak Layak Jual",
       "label_key": "tidak_layak_jual",
-      "confidence_score": 60.05,
-      "raw_score": 0.600506,
-      "threshold_used": 0.5,
+      "confidence_score": 78.98,
+      "raw_score": 0.634354,
+      "threshold_used": 0.1,
       "explanation": "string",
       "is_active": true,
-      "passed_quality_gate": false,
-      "collapse_flags": [
-        "constant_raw_score"
-      ]
+      "passed_quality_gate": true,
+      "collapse_flags": []
     }
   ]
 }

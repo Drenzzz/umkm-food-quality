@@ -13,7 +13,7 @@ Use the script below to inspect raw model outputs across registered artifacts:
 Evaluate one specific model:
 
 ```bash
-.venv-ml/bin/python scripts/evaluate_model_outputs.py --model-id exp_001_industry_biscuit_only --split test --limit 10
+.venv-ml/bin/python scripts/evaluate_model_outputs.py --model-id exp_005_combined_public_baseline --split test --limit 10
 ```
 
 Write JSON output to a file:
