@@ -32,6 +32,7 @@ class ImageSample:
     expected_label: str
     split: str
     dataset_slug: str
+    product_domain: str
 
 
 @dataclass(frozen=True)
@@ -46,6 +47,7 @@ class PredictionOutput:
     confidence_score: float
     split: str
     dataset_slug: str
+    product_domain: str
 
 
 @dataclass(frozen=True)
@@ -73,6 +75,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-id", default="all", help="Model experiment id to evaluate, or 'all'.")
     parser.add_argument("--output", default="", help="Optional JSON output path.")
     parser.add_argument("--quality-report", default="", help="Optional model quality report JSON path.")
+    parser.add_argument("--domain-bias-report", default="", help="Optional domain bias report JSON path.")
     return parser.parse_args()
 
 
@@ -96,12 +99,38 @@ def load_samples(metadata_path: Path, split: str, limit: int) -> list[ImageSampl
                     expected_label=str(row["final_label"]),
                     split=str(row["split"]),
                     dataset_slug=str(row["dataset_slug"]),
+                    product_domain=str(row["product_domain"]),
                 )
             )
-            if len(samples) >= limit:
+
+    if len(samples) <= limit:
+        return samples
+
+    return select_stratified_samples(samples, limit)
+
+
+def select_stratified_samples(samples: list[ImageSample], limit: int) -> list[ImageSample]:
+    grouped: dict[str, list[ImageSample]] = defaultdict(list)
+    for sample in samples:
+        grouped[sample.product_domain].append(sample)
+
+    selected: list[ImageSample] = []
+    total = len(samples)
+    for product_domain in sorted(grouped):
+        domain_samples = grouped[product_domain]
+        allocation = max(1, round(limit * len(domain_samples) / total))
+        selected.extend(domain_samples[: min(allocation, len(domain_samples))])
+
+    if len(selected) < limit:
+        selected_ids = {sample.image_id for sample in selected}
+        for sample in samples:
+            if sample.image_id in selected_ids:
+                continue
+            selected.append(sample)
+            if len(selected) >= limit:
                 break
 
-    return samples
+    return selected[:limit]
 
 
 def select_models(model_id: str, model_root: Path, active_config_path: Path) -> list[ModelArtifact]:
@@ -196,6 +225,7 @@ def predict_sample(model: ModelArtifact, keras_model: tf.keras.Model, class_indi
         confidence_score=round(confidence * 100, 2),
         split=sample.split,
         dataset_slug=sample.dataset_slug,
+        product_domain=sample.product_domain,
     )
 
 
@@ -229,6 +259,38 @@ def build_quality_report(outputs: list[PredictionOutput]) -> dict[str, Any]:
             "required_recall_labels": ["layak_jual", "tidak_layak_jual"],
         },
         "models": [asdict(summary) for summary in summaries],
+    }
+
+
+def build_domain_bias_report(outputs: list[PredictionOutput]) -> dict[str, Any]:
+    grouped: dict[str, list[PredictionOutput]] = defaultdict(list)
+    for output in outputs:
+        grouped[output.model_id].append(output)
+
+    return {
+        "models": [build_domain_bias_summary(model_id, model_outputs) for model_id, model_outputs in sorted(grouped.items())]
+    }
+
+
+def build_domain_bias_summary(model_id: str, outputs: list[PredictionOutput]) -> dict[str, Any]:
+    grouped: dict[str, list[PredictionOutput]] = defaultdict(list)
+    for output in outputs:
+        grouped[output.product_domain].append(output)
+
+    domains: dict[str, Any] = {}
+    for product_domain, domain_outputs in sorted(grouped.items()):
+        predicted_counts = Counter(output.predicted_label for output in domain_outputs)
+        expected_counts = Counter(output.expected_label for output in domain_outputs)
+        domains[product_domain] = {
+            "sample_count": len(domain_outputs),
+            "predicted_label_counts": dict(predicted_counts),
+            "expected_label_counts": dict(expected_counts),
+            "recall_by_label": calculate_recall_by_label(domain_outputs, expected_counts),
+        }
+
+    return {
+        "model_id": model_id,
+        "domains": domains,
     }
 
 
@@ -292,6 +354,9 @@ def main() -> None:
     if args.quality_report:
         quality_report = build_quality_report(outputs)
         Path(args.quality_report).write_text(f"{json.dumps(quality_report, indent=2)}\n", encoding="utf-8")
+    if args.domain_bias_report:
+        domain_bias_report = build_domain_bias_report(outputs)
+        Path(args.domain_bias_report).write_text(f"{json.dumps(domain_bias_report, indent=2)}\n", encoding="utf-8")
     print(text)
 
 

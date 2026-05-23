@@ -32,6 +32,16 @@ Write model collapse quality report:
   --quality-report ml/model/model_quality_report.json
 ```
 
+Write domain bias report for the active global baseline:
+
+```bash
+.venv-ml/bin/python scripts/evaluate_model_outputs.py \
+  --model-id exp_005_combined_public_baseline \
+  --split test \
+  --limit 500 \
+  --domain-bias-report ml/reports/domain_bias_report.json
+```
+
 ## Output Fields
 
 Each output item includes:
@@ -63,4 +73,14 @@ The current report is stored at:
 
 ```text
 ml/model/model_quality_report.json
+```
+
+## Domain Bias Report
+
+The domain bias report stores prediction counts and recall per label for each product domain.
+
+Default path:
+
+```text
+ml/reports/domain_bias_report.json
 ```

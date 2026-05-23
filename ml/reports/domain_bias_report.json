@@ -1,0 +1,39 @@
+{
+  "models": [
+    {
+      "model_id": "exp_005_combined_public_baseline",
+      "domains": {
+        "biskuit_kukis": {
+          "sample_count": 359,
+          "predicted_label_counts": {
+            "layak_jual": 303,
+            "tidak_layak_jual": 56
+          },
+          "expected_label_counts": {
+            "layak_jual": 285,
+            "tidak_layak_jual": 74
+          },
+          "recall_by_label": {
+            "layak_jual": 1.0,
+            "tidak_layak_jual": 0.756757
+          }
+        },
+        "keripik": {
+          "sample_count": 141,
+          "predicted_label_counts": {
+            "layak_jual": 76,
+            "tidak_layak_jual": 65
+          },
+          "expected_label_counts": {
+            "layak_jual": 75,
+            "tidak_layak_jual": 66
+          },
+          "recall_by_label": {
+            "layak_jual": 1.0,
+            "tidak_layak_jual": 0.984848
+          }
+        }
+      }
+    }
+  ]
+}
