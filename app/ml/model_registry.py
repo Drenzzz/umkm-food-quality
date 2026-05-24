@@ -40,6 +40,22 @@ def load_model_registry() -> ModelRegistry:
         active_model = build_env_model_artifact(settings.model_path, settings.class_indices_path, quality_report)
         models = [active_model, *models]
 
+    active_config_threshold = active_config.get("threshold")
+    if active_config_threshold is not None and isinstance(active_config_threshold, (int, float)):
+        active_model = ModelArtifact(
+            experiment_id=active_model.experiment_id,
+            model_family=active_model.model_family,
+            model_path=active_model.model_path,
+            class_indices_path=active_model.class_indices_path,
+            threshold=float(active_config_threshold),
+            status=active_model.status,
+            is_active=active_model.is_active,
+            passed_quality_gate=active_model.passed_quality_gate,
+            collapse_flags=active_model.collapse_flags,
+            quality_sample_count=active_model.quality_sample_count,
+        )
+        models = [active_model if m.experiment_id == active_model.experiment_id else m for m in models]
+
     enforce_active_model_quality(active_model, settings.model_quality_strict)
 
     return ModelRegistry(active_model=active_model, models=models)

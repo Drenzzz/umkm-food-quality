@@ -42,7 +42,14 @@ Backend harus selalu membaca `class_indices.json` dari model aktif untuk menghin
 
 ## Threshold Rule
 
-Backend tidak boleh mengasumsikan threshold tetap `0.50` jika hasil review threshold sudah memilih nilai lain.
+The active threshold follows the business scoring contract defined in the planning document:
+
+```text
+raw_score < 0.5  -> layak_jual    (confidence = 1 - raw_score)
+raw_score >= 0.5 -> tidak_layak_jual (confidence = raw_score)
+```
+
+The default threshold is `0.5`. This value must not be changed without explicit review and approval, as it directly affects the label decision boundary visible to end users.
 
 Threshold aktif harus mengikuti artefak model yang dipilih untuk backend.
 

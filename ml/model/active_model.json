@@ -3,7 +3,7 @@
   "model_family": "MobileNetV2",
   "model_path": "ml/model/exp_005_combined_public_baseline/model.keras",
   "class_indices_path": "ml/model/exp_005_combined_public_baseline/class_indices.json",
-  "threshold": 0.1,
-  "selection_reason": "Best validated global public baseline after training hardening, with passing quality gate and stronger recall on tidak_layak_jual.",
+  "threshold": 0.5,
+  "selection_reason": "Best validated global public baseline after training hardening. Threshold restored to 0.5 per business scoring contract: score >= 0.5 means tidak_layak_jual.",
   "selection_scope": "global_public_backend_baseline"
 }
