@@ -20,8 +20,8 @@ REQUIRED_TRAINING_KEYS = {
     "model_family",
     "evaluation_priority",
 }
-VALID_DATASET_SLUGS = {"industry_biscuit", "taterdat_chip", "pepsico_potato_lab"}
-VALID_PRODUCT_DOMAINS = {"biskuit_kukis", "keripik"}
+VALID_DATASET_SLUGS = {"industry_biscuit", "taterdat_chip", "pepsico_potato_lab", "dataset_scrape_manual"}
+VALID_PRODUCT_DOMAINS = {"biskuit_kukis", "keripik", "kerupuk"}
 VALID_LABELS = {"layak_jual", "tidak_layak_jual"}
 
 
@@ -40,15 +40,12 @@ def main() -> int:
     args = build_parser().parse_args()
     project_root = args.project_root.resolve()
     experiments_dir = project_root / "ml" / "experiments"
-    metadata_path = project_root / "dataset" / "metadata" / "public_metadata.csv"
-    split_path = project_root / "dataset" / "metadata" / "split_metadata.csv"
-
     experiment_paths = sorted(experiments_dir.glob("exp_*.json"))
     if not experiment_paths:
         raise SystemExit("No experiment definition files were found.")
 
     for path in experiment_paths:
-        validate_experiment_file(path, metadata_path, split_path)
+        validate_experiment_file(path)
 
     print(f"Validated experiments: {len(experiment_paths)}")
     for path in experiment_paths:
@@ -56,7 +53,7 @@ def main() -> int:
     return 0
 
 
-def validate_experiment_file(path: Path, metadata_path: Path, split_path: Path) -> None:
+def validate_experiment_file(path: Path) -> None:
     payload = json.loads(path.read_text(encoding="utf-8"))
 
     missing_root_keys = REQUIRED_ROOT_KEYS - payload.keys()
@@ -80,10 +77,10 @@ def validate_experiment_file(path: Path, metadata_path: Path, split_path: Path) 
     if set(scope["allowed_labels"]) != VALID_LABELS:
         raise ValueError(f"{path.name}: allowed labels must match binary baseline labels")
 
-    if training_plan["input_metadata"] != str(metadata_path.relative_to(path.parents[2])).replace("\\", "/"):
-        raise ValueError(f"{path.name}: input_metadata path is not aligned with project metadata")
-    if training_plan["split_metadata"] != str(split_path.relative_to(path.parents[2])).replace("\\", "/"):
-        raise ValueError(f"{path.name}: split_metadata path is not aligned with project metadata")
+    for key in ("input_metadata", "split_metadata"):
+        metadata_path = path.parents[2] / training_plan[key]
+        if not metadata_path.exists():
+            raise ValueError(f"{path.name}: {key} path does not exist: {training_plan[key]}")
 
 
 if __name__ == "__main__":

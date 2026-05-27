@@ -1,0 +1,26 @@
+{
+  "experiment_id": "exp_006_manual_dataset_scrape_baseline",
+  "experiment_name": "Manual Dataset-Scrape Baseline",
+  "status": "planned",
+  "goal": "Train a first baseline from manually collected dataset-scrape batches only.",
+  "dataset_scope": {
+    "dataset_slugs": [
+      "dataset_scrape_manual"
+    ],
+    "product_domains": [
+      "keripik",
+      "kerupuk",
+      "biskuit_kukis"
+    ],
+    "allowed_labels": [
+      "layak_jual",
+      "tidak_layak_jual"
+    ]
+  },
+  "training_plan": {
+    "input_metadata": "dataset/metadata/manual_prepared_metadata.csv",
+    "split_metadata": "dataset/metadata/manual_split_metadata.csv",
+    "model_family": "MobileNetV2",
+    "evaluation_priority": "recall_tidak_layak_jual"
+  }
+}
