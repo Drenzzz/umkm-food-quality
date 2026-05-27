@@ -31,6 +31,12 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     Base.metadata.create_all(bind=engine)
 
+    # create_all is only used for test/dev convenience. Production deployments
+    # must run `alembic upgrade head` before starting the server so that schema
+    # changes are applied in a controlled, reversible way.
+    if settings.app_env in {"development", "test"}:
+        Base.metadata.create_all(bind=engine)
+
     if settings.warmup_predictor_on_startup and settings.app_env != "test":
         try:
             get_predictor()

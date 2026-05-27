@@ -1,8 +1,13 @@
 import json
 import os
+import socket
 from pathlib import Path
+from unittest.mock import patch
 
+import pytest
+import respx
 from fastapi.testclient import TestClient
+from httpx import Response
 
 
 TEST_DB_PATH = Path("/tmp/umkm_food_quality_detect_test.sqlite3")
@@ -14,7 +19,6 @@ os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
 os.environ.setdefault("MODEL_PATH", "ml/model/exp_001_industry_biscuit_only/model.keras")
 os.environ.setdefault("CLASS_INDICES_PATH", "ml/model/exp_001_industry_biscuit_only/class_indices.json")
 os.environ.setdefault("CORS_ORIGINS", "http://localhost:3000")
-# Empty string disables domain whitelist so the test image URL is not blocked.
 os.environ["ALLOWED_IMAGE_DOMAINS"] = ""
 
 if TEST_DB_PATH.exists():
@@ -25,6 +29,13 @@ from app.main import app  # noqa: E402
 
 get_settings.cache_clear()
 
+FIXTURE_IMAGE = Path("tests/fixtures/sample_keripik.jpg").read_bytes()
+MOCK_IMAGE_URL = "https://mock.example.com/sample.jpg"
+
+# Fake DNS resolution that returns a public IP so the SSRF guard passes.
+# The actual HTTP request is intercepted by respx before it hits the network.
+_MOCK_DNS = [(socket.AF_INET, socket.SOCK_STREAM, 0, "", ("93.184.216.34", 0))]
+
 
 def _expected_active_experiment() -> str:
     config_path = Path("ml/model/active_model.json")
@@ -32,7 +43,21 @@ def _expected_active_experiment() -> str:
     return str(payload["experiment_id"])
 
 
-def test_detect_endpoint_returns_detection_payload() -> None:
+@pytest.fixture()
+def mock_image_download():
+    with patch("app.ml.predictor.socket.getaddrinfo", return_value=_MOCK_DNS):
+        with respx.mock(assert_all_called=False) as mock:
+            mock.get(MOCK_IMAGE_URL).mock(
+                return_value=Response(
+                    200,
+                    content=FIXTURE_IMAGE,
+                    headers={"content-type": "image/jpeg"},
+                )
+            )
+            yield mock
+
+
+def test_detect_endpoint_returns_detection_payload(mock_image_download) -> None:
     with TestClient(app) as client:
         register_response = client.post(
             "/auth/register",
@@ -46,19 +71,14 @@ def test_detect_endpoint_returns_detection_payload() -> None:
 
         login_response = client.post(
             "/auth/login",
-            json={
-                "email": "detector@example.com",
-                "password": "password123",
-            },
+            json={"email": "detector@example.com", "password": "password123"},
         )
         token = login_response.json()["access_token"]
 
         detect_response = client.post(
             "/detect",
             headers={"Authorization": f"Bearer {token}"},
-            json={
-                "image_url": "https://raw.githubusercontent.com/github/explore/main/topics/python/python.png"
-            },
+            json={"image_url": MOCK_IMAGE_URL},
         )
 
         assert detect_response.status_code == 201, detect_response.text
@@ -67,3 +87,4 @@ def test_detect_endpoint_returns_detection_payload() -> None:
         assert payload["model_version"] == _expected_active_experiment()
         assert isinstance(payload["threshold_used"], float)
         assert 0.0 < payload["threshold_used"] < 1.0
+        assert 0.0 <= payload["confidence_score"] <= 100.0

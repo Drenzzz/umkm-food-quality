@@ -1,7 +1,12 @@
 import os
+import socket
 from pathlib import Path
+from unittest.mock import patch
 
+import pytest
+import respx
 from fastapi.testclient import TestClient
+from httpx import Response
 
 
 TEST_DB_PATH = Path("/tmp/umkm_food_quality_history_admin_health.sqlite3")
@@ -13,18 +18,36 @@ os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
 os.environ["MODEL_PATH"] = "ml/model/exp_001_industry_biscuit_only/model.keras"
 os.environ["CLASS_INDICES_PATH"] = "ml/model/exp_001_industry_biscuit_only/class_indices.json"
 os.environ["CORS_ORIGINS"] = "http://localhost:3000"
-# Empty string disables domain whitelist so the test image URL is not blocked.
 os.environ["ALLOWED_IMAGE_DOMAINS"] = ""
 
 if TEST_DB_PATH.exists():
     TEST_DB_PATH.unlink()
 
 from app.core.config import get_settings  # noqa: E402
-from app.main import app  # noqa: E402
 from app.db.models import Detection, User  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
+from app.main import app  # noqa: E402
 
 get_settings.cache_clear()
+
+FIXTURE_IMAGE = Path("tests/fixtures/sample_keripik.jpg").read_bytes()
+MOCK_IMAGE_URL = "https://mock.example.com/sample.jpg"
+
+_MOCK_DNS = [(socket.AF_INET, socket.SOCK_STREAM, 0, "", ("93.184.216.34", 0))]
+
+
+@pytest.fixture()
+def mock_image_download():
+    with patch("app.ml.predictor.socket.getaddrinfo", return_value=_MOCK_DNS):
+        with respx.mock(assert_all_called=False) as mock:
+            mock.get(MOCK_IMAGE_URL).mock(
+                return_value=Response(
+                    200,
+                    content=FIXTURE_IMAGE,
+                    headers={"content-type": "image/jpeg"},
+                )
+            )
+            yield mock
 
 
 def promote_user_to_admin(email: str) -> None:
@@ -41,18 +64,14 @@ def reset_test_data() -> None:
         db.commit()
 
 
-def test_history_admin_and_health_flow() -> None:
+def test_history_admin_and_health_flow(mock_image_download) -> None:
     reset_test_data()
 
     with TestClient(app) as client:
         for email, name in [("user@example.com", "Normal User"), ("admin@example.com", "Admin User")]:
             register_response = client.post(
                 "/auth/register",
-                json={
-                    "name": name,
-                    "email": email,
-                    "password": "password123",
-                },
+                json={"name": name, "email": email, "password": "password123"},
             )
             assert register_response.status_code == 201
 
@@ -71,7 +90,7 @@ def test_history_admin_and_health_flow() -> None:
         detect_response = client.post(
             "/detect",
             headers={"Authorization": f"Bearer {user_token}"},
-            json={"image_url": "https://raw.githubusercontent.com/github/explore/main/topics/python/python.png"},
+            json={"image_url": MOCK_IMAGE_URL},
         )
         assert detect_response.status_code == 201
         detection_id = detect_response.json()["id"]
