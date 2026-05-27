@@ -1,0 +1,23 @@
+{
+  "prepared_count": 230,
+  "skipped_count": 0,
+  "summary_by_product": {
+    "biskuit": {
+      "tidak_layak_jual": 31,
+      "layak_jual": 29
+    },
+    "keripik": {
+      "tidak_layak_jual": 23,
+      "layak_jual": 32
+    },
+    "kerupuk": {
+      "tidak_layak_jual": 27,
+      "layak_jual": 27
+    },
+    "kukis": {
+      "tidak_layak_jual": 30,
+      "layak_jual": 31
+    }
+  },
+  "errors": []
+}
