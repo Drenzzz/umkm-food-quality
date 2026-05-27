@@ -49,3 +49,27 @@ def test_auth_register_login_and_me_flow() -> None:
         )
         assert me_response.status_code == 200
         assert me_response.json()["email"] == "test@example.com"
+
+
+def test_register_duplicate_email_returns_409() -> None:
+    with TestClient(app) as client:
+        first_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Duplicate User One",
+                "email": "duplicate@example.com",
+                "password": "password123",
+            },
+        )
+        assert first_response.status_code == 201
+
+        second_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Duplicate User Two",
+                "email": "duplicate@example.com",
+                "password": "password123",
+            },
+        )
+        assert second_response.status_code == 409
+        assert second_response.json()["detail"] == "Email already registered"

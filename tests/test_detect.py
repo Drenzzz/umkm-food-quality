@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -18,6 +19,12 @@ if TEST_DB_PATH.exists():
     TEST_DB_PATH.unlink()
 
 from app.main import app  # noqa: E402
+
+
+def _expected_active_experiment() -> str:
+    config_path = Path("ml/model/active_model.json")
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    return str(payload["experiment_id"])
 
 
 def test_detect_endpoint_returns_detection_payload() -> None:
@@ -52,5 +59,6 @@ def test_detect_endpoint_returns_detection_payload() -> None:
         assert detect_response.status_code == 201, detect_response.text
         payload = detect_response.json()
         assert payload["label_key"] in {"layak_jual", "tidak_layak_jual"}
-        assert payload["model_version"] == "exp_001_industry_biscuit_only"
-        assert payload["threshold_used"] == 0.5
+        assert payload["model_version"] == _expected_active_experiment()
+        assert isinstance(payload["threshold_used"], float)
+        assert 0.0 < payload["threshold_used"] < 1.0

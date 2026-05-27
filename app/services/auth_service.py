@@ -1,10 +1,13 @@
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password, verify_password
 from app.db.models import User
 from app.schemas.auth import RegisterRequest
+
+
+class EmailAlreadyExistsError(Exception):
+    """Raised when registration is attempted with an email that already exists."""
 
 
 def get_user_by_email(db: Session, email: str) -> User | None:
@@ -15,7 +18,7 @@ def get_user_by_email(db: Session, email: str) -> User | None:
 def create_user(db: Session, payload: RegisterRequest) -> User:
     existing_user = get_user_by_email(db, payload.email)
     if existing_user is not None:
-        raise IntegrityError("Email already exists", params=None, orig=None)
+        raise EmailAlreadyExistsError(payload.email)
 
     user = User(
         name=payload.name,

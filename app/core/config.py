@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     model_quality_strict: bool = Field(default=False, alias="MODEL_QUALITY_STRICT")
     enable_multi_model_comparison: bool = Field(default=False, alias="ENABLE_MULTI_MODEL_COMPARISON")
     cors_origins: str = Field(alias="CORS_ORIGINS")
+    allowed_image_domains: str = Field(default="", alias="ALLOWED_IMAGE_DOMAINS")
+    image_download_max_bytes: int = Field(default=10 * 1024 * 1024, alias="IMAGE_DOWNLOAD_MAX_BYTES")
+    image_download_max_redirects: int = Field(default=3, alias="IMAGE_DOWNLOAD_MAX_REDIRECTS")
+    image_download_timeout_seconds: float = Field(default=20.0, alias="IMAGE_DOWNLOAD_TIMEOUT_SECONDS")
+    warmup_predictor_on_startup: bool = Field(default=True, alias="WARMUP_PREDICTOR_ON_STARTUP")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
@@ -33,6 +38,10 @@ class Settings(BaseSettings):
         configured = [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
         merged = DEFAULT_CORS_ORIGINS + configured
         return list(dict.fromkeys(merged))
+
+    @property
+    def allowed_image_domain_list(self) -> list[str]:
+        return [domain.strip().lower() for domain in self.allowed_image_domains.split(",") if domain.strip()]
 
 
 @lru_cache

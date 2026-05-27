@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import io
+import ipaddress
 import json
+import socket
 from functools import lru_cache
+from urllib.parse import urlparse
 
 import httpx
 import numpy as np
@@ -10,6 +13,7 @@ import tensorflow as tf
 from PIL import Image
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
+from app.core.config import get_settings
 from app.ml.model_registry import load_model_registry
 
 
@@ -58,14 +62,76 @@ class Predictor:
         }
 
 
+def _validate_image_url_or_raise(image_url: str) -> None:
+    settings = get_settings()
+    parsed = urlparse(image_url)
+
+    if parsed.scheme not in {"http", "https"}:
+        raise ValueError("Image URL must use http or https scheme")
+
+    hostname = parsed.hostname
+    if not hostname:
+        raise ValueError("Image URL is missing a hostname")
+
+    allowed_domains = settings.allowed_image_domain_list
+    if allowed_domains:
+        host_lower = hostname.lower()
+        if not any(host_lower == domain or host_lower.endswith(f".{domain}") for domain in allowed_domains):
+            raise ValueError("Image URL host is not in the allowed domain list")
+
+    # Resolve hostname to an IP address and reject private, loopback, link-local,
+    # multicast, and reserved ranges. This blocks SSRF attempts targeting cloud
+    # metadata endpoints (e.g. 169.254.169.254) and internal infrastructure.
+    try:
+        resolved = socket.getaddrinfo(hostname, None)
+    except socket.gaierror as exc:
+        raise ValueError("Image URL host could not be resolved") from exc
+
+    for entry in resolved:
+        address = entry[4][0]
+        try:
+            ip_obj = ipaddress.ip_address(address)
+        except ValueError:
+            continue
+        if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local or ip_obj.is_multicast or ip_obj.is_reserved or ip_obj.is_unspecified:
+            raise ValueError("Image URL host resolves to a non-public IP address")
+
+
 async def download_image(image_url: str) -> bytes:
-    async with httpx.AsyncClient(timeout=20) as client:
-        response = await client.get(image_url)
-        response.raise_for_status()
-        content_type = response.headers.get("content-type", "")
-        if not content_type.startswith("image/"):
-            raise ValueError("The provided URL does not point to an image resource")
-        return response.content
+    settings = get_settings()
+    _validate_image_url_or_raise(image_url)
+
+    max_bytes = settings.image_download_max_bytes
+    timeout = settings.image_download_timeout_seconds
+    max_redirects = settings.image_download_max_redirects
+
+    async with httpx.AsyncClient(timeout=timeout, follow_redirects=True, max_redirects=max_redirects) as client:
+        try:
+            async with client.stream("GET", image_url) as response:
+                response.raise_for_status()
+
+                # Re-validate the final URL to guard against open redirect chains
+                # that could land on a private network host.
+                if str(response.url) != image_url:
+                    _validate_image_url_or_raise(str(response.url))
+
+                content_type = response.headers.get("content-type", "")
+                if not content_type.startswith("image/"):
+                    raise ValueError("The provided URL does not point to an image resource")
+
+                content_length_header = response.headers.get("content-length")
+                if content_length_header and content_length_header.isdigit():
+                    if int(content_length_header) > max_bytes:
+                        raise ValueError("Image exceeds maximum allowed size")
+
+                buffer = bytearray()
+                async for chunk in response.aiter_bytes():
+                    buffer.extend(chunk)
+                    if len(buffer) > max_bytes:
+                        raise ValueError("Image exceeds maximum allowed size")
+                return bytes(buffer)
+        except httpx.TooManyRedirects as exc:
+            raise ValueError("Image URL exceeded the redirect limit") from exc
 
 
 def preprocess_image(image_bytes: bytes) -> np.ndarray:

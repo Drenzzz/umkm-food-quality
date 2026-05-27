@@ -6,7 +6,7 @@ from app.core.security import create_access_token, get_current_user
 from app.db.models import User
 from app.db.session import get_db
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse
-from app.services.auth_service import authenticate_user, create_user
+from app.services.auth_service import EmailAlreadyExistsError, authenticate_user, create_user
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -14,7 +14,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(payload: RegisterRequest, db: Session = Depends(get_db)) -> UserResponse:
-    user = create_user(db, payload)
+    try:
+        user = create_user(db, payload)
+    except EmailAlreadyExistsError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered") from exc
     return UserResponse.model_validate(user)
 
 
