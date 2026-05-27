@@ -13,13 +13,18 @@ os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
 os.environ["MODEL_PATH"] = "ml/model/exp_001_industry_biscuit_only/model.keras"
 os.environ["CLASS_INDICES_PATH"] = "ml/model/exp_001_industry_biscuit_only/class_indices.json"
 os.environ["CORS_ORIGINS"] = "http://localhost:3000"
+# Empty string disables domain whitelist so the test image URL is not blocked.
+os.environ["ALLOWED_IMAGE_DOMAINS"] = ""
 
 if TEST_DB_PATH.exists():
     TEST_DB_PATH.unlink()
 
+from app.core.config import get_settings  # noqa: E402
 from app.main import app  # noqa: E402
 from app.db.models import Detection, User  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
+
+get_settings.cache_clear()
 
 
 def promote_user_to_admin(email: str) -> None:

@@ -2,10 +2,16 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.core.config import get_settings
+from app.core.limiter import limiter
+from app.core.logging_config import RequestLoggingMiddleware, setup_logging
 from app.db.base import Base
 from app.db.session import engine
 from app.ml.predictor import get_predictor
@@ -16,6 +22,7 @@ from app.routers.health import router as health_router
 from app.routers.history import router as history_router
 
 
+setup_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -38,6 +45,12 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     settings = get_settings()
     app = FastAPI(title="UMKM Food Quality API", lifespan=lifespan)
+
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+    app.add_middleware(SlowAPIMiddleware)
+    app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
@@ -45,6 +58,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
     app.include_router(auth_router)
     app.include_router(detect_router)
     app.include_router(history_router)

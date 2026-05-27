@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.security import create_access_token, get_current_user
 from app.db.models import User
 from app.db.session import get_db
+from app.core.limiter import limiter
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse
 from app.services.auth_service import EmailAlreadyExistsError, authenticate_user, create_user
 
@@ -13,7 +14,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register_user(payload: RegisterRequest, db: Session = Depends(get_db)) -> UserResponse:
+@limiter.limit("5/minute")
+def register_user(request: Request, payload: RegisterRequest, db: Session = Depends(get_db)) -> UserResponse:
     try:
         user = create_user(db, payload)
     except EmailAlreadyExistsError as exc:
@@ -22,7 +24,8 @@ def register_user(payload: RegisterRequest, db: Session = Depends(get_db)) -> Us
 
 
 @router.post("/login", response_model=TokenResponse)
-def login_user(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
+@limiter.limit("5/minute")
+def login_user(request: Request, payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
     user = authenticate_user(db, payload.email, payload.password)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
