@@ -16,11 +16,11 @@ from app.ml.model_registry import load_model_registry
 LABEL_DISPLAY = {
     "layak_jual": {
         "label": "Layak Jual",
-        "explanation": "Produk memenuhi indikator visual kelayakan seperti warna normal, bentuk relatif utuh, dan kondisi permukaan yang wajar.",
+        "explanation": "Produk pada foto menunjukkan ciri visual yang cenderung sesuai untuk kategori layak jual, dengan warna, bentuk, dan kondisi permukaan yang tampak wajar.",
     },
     "tidak_layak_jual": {
         "label": "Tidak Layak Jual",
-        "explanation": "Produk terdeteksi memiliki indikasi cacat visual seperti warna tidak normal, kerusakan bentuk, atau kondisi permukaan yang tidak wajar.",
+        "explanation": "Produk pada foto menunjukkan indikasi visual yang cenderung sesuai dengan kategori tidak layak jual, seperti warna yang tidak normal, bentuk yang rusak, atau kondisi permukaan yang tampak tidak wajar.",
     },
 }
 
