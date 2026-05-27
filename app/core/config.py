@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEFAULT_CORS_ORIGINS = [
     "http://localhost",
+    "https://localhost",
     "capacitor://localhost",
     "ionic://localhost",
 ]
