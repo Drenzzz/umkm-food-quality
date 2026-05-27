@@ -1,0 +1,42 @@
+{
+  "row_count": 230,
+  "split_counts": {
+    "train": 161,
+    "val": 34,
+    "test": 35
+  },
+  "summary_by_product": {
+    "biskuit": {
+      "train::tidak_layak_jual": 22,
+      "val::tidak_layak_jual": 5,
+      "test::tidak_layak_jual": 4,
+      "train::layak_jual": 20,
+      "val::layak_jual": 4,
+      "test::layak_jual": 5
+    },
+    "keripik": {
+      "train::tidak_layak_jual": 16,
+      "val::tidak_layak_jual": 3,
+      "test::tidak_layak_jual": 4,
+      "train::layak_jual": 22,
+      "val::layak_jual": 5,
+      "test::layak_jual": 5
+    },
+    "kerupuk": {
+      "train::tidak_layak_jual": 19,
+      "val::tidak_layak_jual": 4,
+      "test::tidak_layak_jual": 4,
+      "train::layak_jual": 19,
+      "val::layak_jual": 4,
+      "test::layak_jual": 4
+    },
+    "kukis": {
+      "train::tidak_layak_jual": 21,
+      "val::tidak_layak_jual": 4,
+      "test::tidak_layak_jual": 5,
+      "train::layak_jual": 22,
+      "val::layak_jual": 5,
+      "test::layak_jual": 4
+    }
+  }
+}
