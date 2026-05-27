@@ -1,9 +1,9 @@
 {
-  "experiment_id": "exp_005_combined_public_baseline",
+  "experiment_id": "exp_006_manual_dataset_scrape_baseline",
   "model_family": "MobileNetV2",
-  "model_path": "ml/model/exp_005_combined_public_baseline/model.keras",
-  "class_indices_path": "ml/model/exp_005_combined_public_baseline/class_indices.json",
+  "model_path": "ml/model/exp_006_manual_dataset_scrape_baseline/model.keras",
+  "class_indices_path": "ml/model/exp_006_manual_dataset_scrape_baseline/class_indices.json",
   "threshold": 0.5,
-  "selection_reason": "Best validated global public baseline after training hardening. Threshold restored to 0.5 per business scoring contract: score >= 0.5 means tidak_layak_jual.",
-  "selection_scope": "global_public_backend_baseline"
+  "selection_reason": "Manual baseline promoted for serving sanity checks after public baseline over-predicted non-sellable results on real sample URLs. Threshold kept at 0.5 for stable behavior comparison.",
+  "selection_scope": "manual_dataset_scrape_baseline"
 }
