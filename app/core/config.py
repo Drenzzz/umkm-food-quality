@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     image_download_max_redirects: int = Field(default=3, alias="IMAGE_DOWNLOAD_MAX_REDIRECTS")
     image_download_timeout_seconds: float = Field(default=20.0, alias="IMAGE_DOWNLOAD_TIMEOUT_SECONDS")
     warmup_predictor_on_startup: bool = Field(default=True, alias="WARMUP_PREDICTOR_ON_STARTUP")
+    email_backend: str = Field(default="console", alias="EMAIL_BACKEND")
+    smtp_host: str = Field(default="", alias="SMTP_HOST")
+    smtp_port: int = Field(default=587, alias="SMTP_PORT")
+    smtp_user: str = Field(default="", alias="SMTP_USER")
+    smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
+    email_from: str = Field(default="noreply@foodqcheck.local", alias="EMAIL_FROM")
+    password_reset_token_ttl_minutes: int = Field(default=15, alias="PASSWORD_RESET_TOKEN_TTL_MINUTES")
+    reset_password_frontend_url: str = Field(default="http://localhost:5173/reset-password", alias="RESET_PASSWORD_FRONTEND_URL")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

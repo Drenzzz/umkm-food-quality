@@ -25,6 +25,15 @@ class ChangePasswordRequest(BaseModel):
     new_password: str = Field(min_length=8, max_length=128)
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(min_length=20, max_length=512)
+    new_password: str = Field(min_length=8, max_length=128)
+
+
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -39,3 +48,7 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str
     expires_in_minutes: int
+
+
+class MessageResponse(BaseModel):
+    message: str

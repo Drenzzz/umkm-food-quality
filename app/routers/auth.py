@@ -6,7 +6,17 @@ from app.core.security import create_access_token, get_current_user
 from app.db.models import User
 from app.db.session import get_db
 from app.core.limiter import limiter
-from app.schemas.auth import ChangePasswordRequest, LoginRequest, RegisterRequest, TokenResponse, UpdateProfileRequest, UserResponse
+from app.schemas.auth import (
+    ChangePasswordRequest,
+    ForgotPasswordRequest,
+    LoginRequest,
+    MessageResponse,
+    RegisterRequest,
+    ResetPasswordRequest,
+    TokenResponse,
+    UpdateProfileRequest,
+    UserResponse,
+)
 from app.services.auth_service import (
     EmailAlreadyExistsError,
     InvalidCurrentPasswordError,
@@ -15,6 +25,7 @@ from app.services.auth_service import (
     create_user,
     update_user_profile,
 )
+from app.services.password_reset_service import InvalidPasswordResetTokenError, request_password_reset, reset_password_with_token
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -80,3 +91,20 @@ def change_current_user_password(
     except InvalidCurrentPasswordError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect") from exc
     return UserResponse.model_validate(user)
+
+
+@router.post("/forgot-password", response_model=MessageResponse)
+@limiter.limit("3/minute")
+def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Session = Depends(get_db)) -> MessageResponse:
+    request_password_reset(db, str(payload.email))
+    return MessageResponse(message="If the email exists, a reset link has been sent")
+
+
+@router.post("/reset-password", response_model=MessageResponse)
+@limiter.limit("5/minute")
+def reset_password(request: Request, payload: ResetPasswordRequest, db: Session = Depends(get_db)) -> MessageResponse:
+    try:
+        reset_password_with_token(db, payload.token, payload.new_password)
+    except InvalidPasswordResetTokenError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired password reset token") from exc
+    return MessageResponse(message="Password has been reset successfully")
