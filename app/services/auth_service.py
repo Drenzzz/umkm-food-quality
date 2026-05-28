@@ -1,11 +1,11 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password, verify_password
-from app.db.models import User
-from app.schemas.auth import ChangePasswordRequest, RegisterRequest, UpdateProfileRequest
+from app.db.models import Detection, PasswordReset, User
+from app.schemas.auth import ChangePasswordRequest, DeleteAccountRequest, RegisterRequest, UpdateProfileRequest
 
 
 class EmailAlreadyExistsError(Exception):
@@ -71,3 +71,13 @@ def change_user_password(db: Session, user: User, payload: ChangePasswordRequest
     db.commit()
     db.refresh(user)
     return user
+
+
+def delete_user_account(db: Session, user: User, payload: DeleteAccountRequest) -> None:
+    if not verify_password(payload.current_password, user.password_hash):
+        raise InvalidCurrentPasswordError()
+
+    db.execute(delete(PasswordReset).where(PasswordReset.user_id == user.id))
+    db.execute(delete(Detection).where(Detection.user_id == user.id))
+    db.delete(user)
+    db.commit()

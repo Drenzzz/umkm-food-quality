@@ -8,6 +8,7 @@ from app.db.session import get_db
 from app.core.limiter import limiter
 from app.schemas.auth import (
     ChangePasswordRequest,
+    DeleteAccountRequest,
     ForgotPasswordRequest,
     LoginRequest,
     MessageResponse,
@@ -23,6 +24,7 @@ from app.services.auth_service import (
     authenticate_user,
     change_user_password,
     create_user,
+    delete_user_account,
     update_user_profile,
 )
 from app.services.password_reset_service import InvalidPasswordResetTokenError, request_password_reset, reset_password_with_token
@@ -108,3 +110,18 @@ def reset_password(request: Request, payload: ResetPasswordRequest, db: Session 
     except InvalidPasswordResetTokenError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired password reset token") from exc
     return MessageResponse(message="Password has been reset successfully")
+
+
+@router.delete("/me", response_model=MessageResponse)
+@limiter.limit("5/minute")
+def delete_current_user(
+    request: Request,
+    payload: DeleteAccountRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> MessageResponse:
+    try:
+        delete_user_account(db, current_user, payload)
+    except InvalidCurrentPasswordError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect") from exc
+    return MessageResponse(message="Account deleted successfully")

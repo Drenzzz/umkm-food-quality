@@ -23,7 +23,7 @@ if TEST_DB_PATH.exists():
 from sqlalchemy import select  # noqa: E402
 
 from app.core.password_reset_token import hash_password_reset_token  # noqa: E402
-from app.db.models import PasswordReset  # noqa: E402
+from app.db.models import Detection, PasswordReset, User  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
 from app.main import app  # noqa: E402
 
@@ -376,3 +376,113 @@ def test_reset_password_accepts_valid_token_and_rejects_reuse() -> None:
             },
         )
         assert new_password_login_response.status_code == 200
+
+
+def test_delete_account_removes_user_and_related_records() -> None:
+    with TestClient(app) as client:
+        register_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Delete Account User",
+                "email": "delete-account@example.com",
+                "password": "password123",
+            },
+        )
+        assert register_response.status_code == 201
+
+        login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "delete-account@example.com",
+                "password": "password123",
+            },
+        )
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        forgot_response = client.post(
+            "/auth/forgot-password",
+            json={"email": "delete-account@example.com"},
+        )
+        assert forgot_response.status_code == 200
+
+        with SessionLocal() as db:
+            user = db.scalar(select(User).where(User.email == "delete-account@example.com"))
+            assert user is not None
+            user_id = user.id
+            db.add(
+                Detection(
+                    user_id=user_id,
+                    image_url="https://example.com/image.jpg",
+                    label="Layak Jual",
+                    label_key="layak_jual",
+                    confidence_score=95.0,
+                    raw_score=0.95,
+                    threshold_used=0.4,
+                    model_version="test-model",
+                    explanation="Looks good",
+                )
+            )
+            db.commit()
+
+        delete_response = client.request(
+            "DELETE",
+            "/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+            json={"current_password": "password123"},
+        )
+        assert delete_response.status_code == 200
+        assert delete_response.json()["message"] == "Account deleted successfully"
+
+        login_after_delete_response = client.post(
+            "/auth/login",
+            json={
+                "email": "delete-account@example.com",
+                "password": "password123",
+            },
+        )
+        assert login_after_delete_response.status_code == 401
+
+        with SessionLocal() as db:
+            deleted_user = db.scalar(select(User).where(User.email == "delete-account@example.com"))
+            remaining_detection = db.scalar(
+                select(Detection).where(Detection.user_id == user_id)
+            )
+            remaining_reset = db.scalar(
+                select(PasswordReset).where(PasswordReset.user_id == user_id)
+            )
+            assert deleted_user is None
+            assert remaining_detection is None
+            assert remaining_reset is None
+
+
+def test_delete_account_rejects_wrong_current_password() -> None:
+    with TestClient(app) as client:
+        register_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Rejected Delete User",
+                "email": "rejected-delete@example.com",
+                "password": "password123",
+            },
+        )
+        assert register_response.status_code == 201
+
+        login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "rejected-delete@example.com",
+                "password": "password123",
+            },
+        )
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        delete_response = client.request(
+            "DELETE",
+            "/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+            json={"current_password": "wrongpass123"},
+        )
+        assert delete_response.status_code == 400
+        assert delete_response.json()["detail"] == "Current password is incorrect"
