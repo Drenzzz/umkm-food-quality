@@ -1,9 +1,11 @@
+from datetime import UTC, datetime
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password, verify_password
 from app.db.models import User
-from app.schemas.auth import RegisterRequest, UpdateProfileRequest
+from app.schemas.auth import ChangePasswordRequest, RegisterRequest, UpdateProfileRequest
 
 
 class EmailAlreadyExistsError(Exception):
@@ -55,6 +57,17 @@ def update_user_profile(db: Session, user: User, payload: UpdateProfileRequest) 
 
     user.name = payload.name
     user.email = str(payload.email)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def change_user_password(db: Session, user: User, payload: ChangePasswordRequest) -> User:
+    if not verify_password(payload.current_password, user.password_hash):
+        raise InvalidCurrentPasswordError()
+
+    user.password_hash = hash_password(payload.new_password)
+    user.last_password_change_at = datetime.now(UTC)
     db.commit()
     db.refresh(user)
     return user

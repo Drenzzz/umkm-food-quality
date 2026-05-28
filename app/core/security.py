@@ -25,9 +25,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(subject: str) -> str:
     settings = get_settings()
-    expire_at = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
-    payload = {"sub": subject, "exp": expire_at}
+    issued_at = datetime.now(UTC)
+    expire_at = issued_at + timedelta(minutes=settings.access_token_expire_minutes)
+    payload = {"sub": subject, "iat": issued_at, "exp": expire_at}
     return jwt.encode(payload, settings.secret_key, algorithm="HS256")
+
+
+def _as_aware_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
 
 
 def get_current_user(
@@ -44,6 +51,7 @@ def get_current_user(
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
         subject = payload.get("sub")
+        issued_at = payload.get("iat")
         if subject is None:
             raise credentials_exception
         user_id = int(subject)
@@ -53,6 +61,12 @@ def get_current_user(
     user = db.get(User, user_id)
     if user is None:
         raise credentials_exception
+    if user.last_password_change_at is not None:
+        if not isinstance(issued_at, int):
+            raise credentials_exception
+        token_issued_at = datetime.fromtimestamp(issued_at, UTC)
+        if token_issued_at < _as_aware_utc(user.last_password_change_at):
+            raise credentials_exception
     return user
 
 

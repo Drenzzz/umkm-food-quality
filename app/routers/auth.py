@@ -6,11 +6,12 @@ from app.core.security import create_access_token, get_current_user
 from app.db.models import User
 from app.db.session import get_db
 from app.core.limiter import limiter
-from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UpdateProfileRequest, UserResponse
+from app.schemas.auth import ChangePasswordRequest, LoginRequest, RegisterRequest, TokenResponse, UpdateProfileRequest, UserResponse
 from app.services.auth_service import (
     EmailAlreadyExistsError,
     InvalidCurrentPasswordError,
     authenticate_user,
+    change_user_password,
     create_user,
     update_user_profile,
 )
@@ -63,4 +64,19 @@ def update_current_user(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect") from exc
     except EmailAlreadyExistsError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered") from exc
+    return UserResponse.model_validate(user)
+
+
+@router.post("/change-password", response_model=UserResponse)
+@limiter.limit("5/minute")
+def change_current_user_password(
+    request: Request,
+    payload: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> UserResponse:
+    try:
+        user = change_user_password(db, current_user, payload)
+    except InvalidCurrentPasswordError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect") from exc
     return UserResponse.model_validate(user)

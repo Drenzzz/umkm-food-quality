@@ -189,3 +189,94 @@ def test_update_profile_rejects_duplicate_email() -> None:
         )
         assert update_response.status_code == 409
         assert update_response.json()["detail"] == "Email already registered"
+
+
+def test_change_password_invalidates_existing_token() -> None:
+    with TestClient(app) as client:
+        register_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Password Change User",
+                "email": "password-change@example.com",
+                "password": "password123",
+            },
+        )
+        assert register_response.status_code == 201
+
+        login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "password-change@example.com",
+                "password": "password123",
+            },
+        )
+        assert login_response.status_code == 200
+        old_token = login_response.json()["access_token"]
+
+        change_response = client.post(
+            "/auth/change-password",
+            headers={"Authorization": f"Bearer {old_token}"},
+            json={
+                "current_password": "password123",
+                "new_password": "newpassword123",
+            },
+        )
+        assert change_response.status_code == 200
+
+        old_token_response = client.get(
+            "/auth/me",
+            headers={"Authorization": f"Bearer {old_token}"},
+        )
+        assert old_token_response.status_code == 401
+
+        old_password_login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "password-change@example.com",
+                "password": "password123",
+            },
+        )
+        assert old_password_login_response.status_code == 401
+
+        new_password_login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "password-change@example.com",
+                "password": "newpassword123",
+            },
+        )
+        assert new_password_login_response.status_code == 200
+
+
+def test_change_password_rejects_wrong_current_password() -> None:
+    with TestClient(app) as client:
+        register_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Rejected Password Change User",
+                "email": "rejected-password-change@example.com",
+                "password": "password123",
+            },
+        )
+        assert register_response.status_code == 201
+
+        login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "rejected-password-change@example.com",
+                "password": "password123",
+            },
+        )
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        change_response = client.post(
+            "/auth/change-password",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "current_password": "wrongpass123",
+                "new_password": "newpassword123",
+            },
+        )
+        assert change_response.status_code == 400
+        assert change_response.json()["detail"] == "Current password is incorrect"
