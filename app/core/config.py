@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     email_from: str = Field(default="noreply@foodqcheck.local", alias="EMAIL_FROM")
     password_reset_token_ttl_minutes: int = Field(default=15, alias="PASSWORD_RESET_TOKEN_TTL_MINUTES")
     reset_password_frontend_url: str = Field(default="http://localhost:5173/reset-password", alias="RESET_PASSWORD_FRONTEND_URL")
+    email_verification_token_ttl_minutes: int = Field(default=30, alias="EMAIL_VERIFICATION_TOKEN_TTL_MINUTES")
+    verify_email_frontend_url: str = Field(default="http://localhost:5173/verify-email", alias="VERIFY_EMAIL_FRONTEND_URL")
+    require_verified_email: bool = Field(default=False, alias="REQUIRE_VERIFIED_EMAIL")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

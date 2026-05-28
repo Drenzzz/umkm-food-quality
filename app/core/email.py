@@ -15,7 +15,7 @@ class EmailSender:
 
 class ConsoleEmailSender(EmailSender):
     def send(self, recipient: str, subject: str, body: str) -> None:
-        logger.info("Password reset email prepared for %s | %s | %s", recipient, subject, body)
+        logger.info("Email prepared for %s | %s | %s", recipient, subject, body)
 
 
 class SMTPEmailSender(EmailSender):

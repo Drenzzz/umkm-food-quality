@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.security import hash_password, verify_password
 from app.db.models import Detection, PasswordReset, User
 from app.schemas.auth import ChangePasswordRequest, DeleteAccountRequest, RegisterRequest, UpdateProfileRequest

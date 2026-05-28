@@ -16,6 +16,9 @@ os.environ.setdefault("CORS_ORIGINS", "http://localhost:3000")
 os.environ.setdefault("EMAIL_BACKEND", "console")
 os.environ.setdefault("PASSWORD_RESET_TOKEN_TTL_MINUTES", "15")
 os.environ.setdefault("RESET_PASSWORD_FRONTEND_URL", "http://localhost:5173/reset-password")
+os.environ.setdefault("EMAIL_VERIFICATION_TOKEN_TTL_MINUTES", "30")
+os.environ.setdefault("VERIFY_EMAIL_FRONTEND_URL", "http://localhost:5173/verify-email")
+os.environ.setdefault("REQUIRE_VERIFIED_EMAIL", "false")
 
 if TEST_DB_PATH.exists():
     TEST_DB_PATH.unlink()
@@ -23,7 +26,7 @@ if TEST_DB_PATH.exists():
 from sqlalchemy import select  # noqa: E402
 
 from app.core.password_reset_token import hash_password_reset_token  # noqa: E402
-from app.db.models import Detection, PasswordReset, User  # noqa: E402
+from app.db.models import Detection, EmailVerification, PasswordReset, User  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
 from app.main import app  # noqa: E402
 
@@ -486,3 +489,70 @@ def test_delete_account_rejects_wrong_current_password() -> None:
         )
         assert delete_response.status_code == 400
         assert delete_response.json()["detail"] == "Current password is incorrect"
+
+
+def test_register_sends_email_verification_and_verify_email_succeeds() -> None:
+    with TestClient(app) as client:
+        register_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Verify Email User",
+                "email": "verify-email@example.com",
+                "password": "password123",
+            },
+        )
+        assert register_response.status_code == 201
+        assert register_response.json()["email_verified_at"] is None
+
+        raw_token = "valid-email-verify-token-for-tests-1234567890"
+        with SessionLocal() as db:
+            verification = db.scalar(select(EmailVerification).order_by(EmailVerification.id.desc()))
+            assert verification is not None
+            verification.token_hash = hash_password_reset_token(raw_token)
+            db.commit()
+
+        verify_response = client.post(
+            "/auth/verify-email",
+            json={"token": raw_token},
+        )
+        assert verify_response.status_code == 200
+        assert verify_response.json()["message"] == "Email verified successfully"
+
+        with SessionLocal() as db:
+            user = db.scalar(select(User).where(User.email == "verify-email@example.com"))
+            assert user is not None
+            assert user.email_verified_at is not None
+
+
+def test_resend_verification_creates_new_record_for_unverified_user() -> None:
+    with TestClient(app) as client:
+        register_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Resend Verify User",
+                "email": "resend-verify@example.com",
+                "password": "password123",
+            },
+        )
+        assert register_response.status_code == 201
+
+        login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "resend-verify@example.com",
+                "password": "password123",
+            },
+        )
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        resend_response = client.post(
+            "/auth/resend-verification",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resend_response.status_code == 200
+        assert resend_response.json()["message"] == "Verification email sent successfully"
+
+        with SessionLocal() as db:
+            verifications = list(db.scalars(select(EmailVerification).where(EmailVerification.user_id == register_response.json()["id"])))
+            assert len(verifications) == 1

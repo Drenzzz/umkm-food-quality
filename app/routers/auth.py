@@ -17,6 +17,7 @@ from app.schemas.auth import (
     TokenResponse,
     UpdateProfileRequest,
     UserResponse,
+    VerifyEmailRequest,
 )
 from app.services.auth_service import (
     EmailAlreadyExistsError,
@@ -28,6 +29,7 @@ from app.services.auth_service import (
     update_user_profile,
 )
 from app.services.password_reset_service import InvalidPasswordResetTokenError, request_password_reset, reset_password_with_token
+from app.services.email_verification_service import InvalidEmailVerificationTokenError, send_email_verification, verify_email_with_token
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -40,6 +42,7 @@ def register_user(request: Request, payload: RegisterRequest, db: Session = Depe
         user = create_user(db, payload)
     except EmailAlreadyExistsError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered") from exc
+    send_email_verification(db, user)
     return UserResponse.model_validate(user)
 
 
@@ -125,3 +128,20 @@ def delete_current_user(
     except InvalidCurrentPasswordError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect") from exc
     return MessageResponse(message="Account deleted successfully")
+
+
+@router.post("/verify-email", response_model=MessageResponse)
+@limiter.limit("5/minute")
+def verify_email(request: Request, payload: VerifyEmailRequest, db: Session = Depends(get_db)) -> MessageResponse:
+    try:
+        verify_email_with_token(db, payload.token)
+    except InvalidEmailVerificationTokenError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired email verification token") from exc
+    return MessageResponse(message="Email verified successfully")
+
+
+@router.post("/resend-verification", response_model=MessageResponse)
+@limiter.limit("3/minute")
+def resend_verification(request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> MessageResponse:
+    send_email_verification(db, current_user)
+    return MessageResponse(message="Verification email sent successfully")

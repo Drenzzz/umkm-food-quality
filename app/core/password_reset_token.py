@@ -22,3 +22,14 @@ def build_password_reset_link(token: str) -> str:
     settings = get_settings()
     separator = "&" if "?" in settings.reset_password_frontend_url else "?"
     return f"{settings.reset_password_frontend_url}{separator}token={token}"
+
+
+def build_email_verification_expiration() -> datetime:
+    settings = get_settings()
+    return datetime.now(UTC) + timedelta(minutes=settings.email_verification_token_ttl_minutes)
+
+
+def build_email_verification_link(token: str) -> str:
+    settings = get_settings()
+    separator = "&" if "?" in settings.verify_email_frontend_url else "?"
+    return f"{settings.verify_email_frontend_url}{separator}token={token}"
