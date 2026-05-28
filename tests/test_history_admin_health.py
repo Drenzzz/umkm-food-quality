@@ -24,8 +24,9 @@ if TEST_DB_PATH.exists():
     TEST_DB_PATH.unlink()
 
 from app.core.config import get_settings  # noqa: E402
+from app.db.base import Base  # noqa: E402
 from app.db.models import Detection, User  # noqa: E402
-from app.db.session import SessionLocal  # noqa: E402
+from app.db.session import SessionLocal, engine  # noqa: E402
 from app.main import app  # noqa: E402
 
 get_settings.cache_clear()
@@ -58,6 +59,7 @@ def promote_user_to_admin(email: str) -> None:
 
 
 def reset_test_data() -> None:
+    Base.metadata.create_all(bind=engine)
     with SessionLocal() as db:
         db.query(Detection).delete()
         db.query(User).delete()
@@ -117,3 +119,105 @@ def test_history_admin_and_health_flow(mock_image_download) -> None:
         health_response = client.get("/health")
         assert health_response.status_code == 200
         assert health_response.json()["status"] == "ok"
+
+
+def test_history_delete_single_and_bulk_respects_user_scope() -> None:
+    reset_test_data()
+
+    with TestClient(app) as client:
+        first_register = client.post(
+            "/auth/register",
+            json={"name": "History User One", "email": "history-one@example.com", "password": "password123"},
+        )
+        assert first_register.status_code == 201
+
+        second_register = client.post(
+            "/auth/register",
+            json={"name": "History User Two", "email": "history-two@example.com", "password": "password123"},
+        )
+        assert second_register.status_code == 201
+
+        first_token = client.post(
+            "/auth/login",
+            json={"email": "history-one@example.com", "password": "password123"},
+        ).json()["access_token"]
+
+        second_token = client.post(
+            "/auth/login",
+            json={"email": "history-two@example.com", "password": "password123"},
+        ).json()["access_token"]
+
+        with SessionLocal() as db:
+            first_user = db.query(User).filter(User.email == "history-one@example.com").one()
+            second_user = db.query(User).filter(User.email == "history-two@example.com").one()
+            db.add_all(
+                [
+                    Detection(
+                        user_id=first_user.id,
+                        image_url="https://example.com/one-a.jpg",
+                        label="Layak Jual",
+                        label_key="layak_jual",
+                        confidence_score=88.0,
+                        raw_score=0.88,
+                        threshold_used=0.4,
+                        model_version="test-model",
+                        explanation="First user item A",
+                    ),
+                    Detection(
+                        user_id=first_user.id,
+                        image_url="https://example.com/one-b.jpg",
+                        label="Tidak Layak Jual",
+                        label_key="tidak_layak_jual",
+                        confidence_score=64.0,
+                        raw_score=0.64,
+                        threshold_used=0.4,
+                        model_version="test-model",
+                        explanation="First user item B",
+                    ),
+                    Detection(
+                        user_id=second_user.id,
+                        image_url="https://example.com/two-a.jpg",
+                        label="Layak Jual",
+                        label_key="layak_jual",
+                        confidence_score=91.0,
+                        raw_score=0.91,
+                        threshold_used=0.4,
+                        model_version="test-model",
+                        explanation="Second user item A",
+                    ),
+                ]
+            )
+            db.commit()
+
+            first_ids = [item.id for item in db.query(Detection).filter(Detection.user_id == first_user.id).order_by(Detection.id.asc())]
+            second_ids = [item.id for item in db.query(Detection).filter(Detection.user_id == second_user.id).order_by(Detection.id.asc())]
+
+        forbidden_delete = client.delete(
+            f"/history/{second_ids[0]}",
+            headers={"Authorization": f"Bearer {first_token}"},
+        )
+        assert forbidden_delete.status_code == 404
+
+        single_delete = client.delete(
+            f"/history/{first_ids[0]}",
+            headers={"Authorization": f"Bearer {first_token}"},
+        )
+        assert single_delete.status_code == 200
+        assert single_delete.json()["deleted_count"] == 1
+
+        bulk_delete = client.request(
+            "DELETE",
+            "/history",
+            headers={"Authorization": f"Bearer {first_token}"},
+            json={"ids": [first_ids[1], second_ids[0]]},
+        )
+        assert bulk_delete.status_code == 200
+        assert bulk_delete.json()["deleted_count"] == 1
+
+        first_history = client.get("/history", headers={"Authorization": f"Bearer {first_token}"})
+        assert first_history.status_code == 200
+        assert first_history.json()["items"] == []
+
+        second_history = client.get("/history", headers={"Authorization": f"Bearer {second_token}"})
+        assert second_history.status_code == 200
+        assert len(second_history.json()["items"]) == 1

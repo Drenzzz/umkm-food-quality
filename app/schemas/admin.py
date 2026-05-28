@@ -33,6 +33,14 @@ class HistoryListResponse(BaseModel):
     items: list[HistoryItemResponse]
 
 
+class BulkDeleteRequest(BaseModel):
+    ids: list[int]
+
+
+class DeleteHistoryResponse(BaseModel):
+    deleted_count: int
+
+
 class AdminDashboardResponse(BaseModel):
     total_detections: int
     total_layak_jual: int
