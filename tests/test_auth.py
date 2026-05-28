@@ -73,3 +73,119 @@ def test_register_duplicate_email_returns_409() -> None:
         )
         assert second_response.status_code == 409
         assert second_response.json()["detail"] == "Email already registered"
+
+
+def test_update_profile_with_current_password() -> None:
+    with TestClient(app) as client:
+        register_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Profile User",
+                "email": "profile@example.com",
+                "password": "password123",
+            },
+        )
+        assert register_response.status_code == 201
+
+        login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "profile@example.com",
+                "password": "password123",
+            },
+        )
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        update_response = client.patch(
+            "/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "name": "Updated Profile User",
+                "email": "profile-updated@example.com",
+                "current_password": "password123",
+            },
+        )
+        assert update_response.status_code == 200
+        assert update_response.json()["name"] == "Updated Profile User"
+        assert update_response.json()["email"] == "profile-updated@example.com"
+
+
+def test_update_profile_rejects_wrong_current_password() -> None:
+    with TestClient(app) as client:
+        register_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Wrong Password User",
+                "email": "wrong-password@example.com",
+                "password": "password123",
+            },
+        )
+        assert register_response.status_code == 201
+
+        login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "wrong-password@example.com",
+                "password": "password123",
+            },
+        )
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        update_response = client.patch(
+            "/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "name": "Blocked User",
+                "email": "blocked@example.com",
+                "current_password": "wrongpass123",
+            },
+        )
+        assert update_response.status_code == 400
+        assert update_response.json()["detail"] == "Current password is incorrect"
+
+
+def test_update_profile_rejects_duplicate_email() -> None:
+    with TestClient(app) as client:
+        first_response = client.post(
+            "/auth/register",
+            json={
+                "name": "First Profile User",
+                "email": "first-profile@example.com",
+                "password": "password123",
+            },
+        )
+        assert first_response.status_code == 201
+
+        second_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Second Profile User",
+                "email": "second-profile@example.com",
+                "password": "password123",
+            },
+        )
+        assert second_response.status_code == 201
+
+        login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "second-profile@example.com",
+                "password": "password123",
+            },
+        )
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+        update_response = client.patch(
+            "/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "name": "Second Profile User",
+                "email": "first-profile@example.com",
+                "current_password": "password123",
+            },
+        )
+        assert update_response.status_code == 409
+        assert update_response.json()["detail"] == "Email already registered"

@@ -3,11 +3,15 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_password, verify_password
 from app.db.models import User
-from app.schemas.auth import RegisterRequest
+from app.schemas.auth import RegisterRequest, UpdateProfileRequest
 
 
 class EmailAlreadyExistsError(Exception):
     """Raised when registration is attempted with an email that already exists."""
+
+
+class InvalidCurrentPasswordError(Exception):
+    """Raised when the current password does not match the stored password."""
 
 
 def get_user_by_email(db: Session, email: str) -> User | None:
@@ -38,4 +42,19 @@ def authenticate_user(db: Session, email: str, password: str) -> User | None:
         return None
     if not verify_password(password, user.password_hash):
         return None
+    return user
+
+
+def update_user_profile(db: Session, user: User, payload: UpdateProfileRequest) -> User:
+    if not verify_password(payload.current_password, user.password_hash):
+        raise InvalidCurrentPasswordError()
+
+    existing_user = get_user_by_email(db, payload.email)
+    if existing_user is not None and existing_user.id != user.id:
+        raise EmailAlreadyExistsError(payload.email)
+
+    user.name = payload.name
+    user.email = str(payload.email)
+    db.commit()
+    db.refresh(user)
     return user
