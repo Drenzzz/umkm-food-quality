@@ -8,7 +8,7 @@ class DetectRequest(BaseModel):
 
 
 class DetectResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
 
     id: int
     label: str
@@ -23,6 +23,8 @@ class DetectResponse(BaseModel):
 
 
 class ModelComparisonItemResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     model_version: str
     label: str
     label_key: str
@@ -36,6 +38,8 @@ class ModelComparisonItemResponse(BaseModel):
 
 
 class DetectComparisonResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     active_model_id: str
     image_url: str
     predictions: list[ModelComparisonItemResponse]

@@ -15,7 +15,7 @@ class HistoryItemResponse(BaseModel):
 
 
 class HistoryDetailResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
 
     id: int
     label: str
@@ -49,7 +49,7 @@ class AdminDashboardResponse(BaseModel):
 
 
 class AdminDetectionItemResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
 
     id: int
     user_id: int
@@ -61,7 +61,7 @@ class AdminDetectionItemResponse(BaseModel):
 
 
 class AdminDetectionDetailResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
 
     id: int
     user_id: int
@@ -84,6 +84,8 @@ class AdminDetectionListResponse(BaseModel):
 
 
 class AdminModelItemResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     experiment_id: str
     model_family: str
     threshold: float
@@ -102,6 +104,8 @@ class AdminModelRegistryResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     status: str
     database: str
     model_loaded: bool
