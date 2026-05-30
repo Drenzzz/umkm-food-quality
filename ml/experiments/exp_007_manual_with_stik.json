@@ -1,0 +1,27 @@
+{
+  "experiment_id": "exp_007_manual_with_stik",
+  "experiment_name": "Manual Dataset-New Baseline with Stik",
+  "status": "planned",
+  "goal": "Train a refreshed manual baseline from dataset-new with stik added as a dedicated product domain.",
+  "dataset_scope": {
+    "dataset_slugs": [
+      "dataset_scrape_manual"
+    ],
+    "product_domains": [
+      "keripik",
+      "kerupuk",
+      "biskuit_kukis",
+      "stik"
+    ],
+    "allowed_labels": [
+      "layak_jual",
+      "tidak_layak_jual"
+    ]
+  },
+  "training_plan": {
+    "input_metadata": "dataset/metadata/manual_prepared_metadata.csv",
+    "split_metadata": "dataset/metadata/manual_split_metadata.csv",
+    "model_family": "MobileNetV2",
+    "evaluation_priority": "recall_tidak_layak_jual"
+  }
+}

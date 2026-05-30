@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -30,6 +31,7 @@ PRODUCT_DOMAIN_MAP = {
     "kerupuk": "kerupuk",
     "biskuit": "biskuit_kukis",
     "kukis": "biskuit_kukis",
+    "stik": "stik",
 }
 
 LABEL_GUESS_MAP = {
@@ -105,7 +107,29 @@ def collect_rows(source_root: Path, project_root: Path) -> list[dict[str, str]]:
                 continue
             label_lane = lane_dir.name
             if label_lane not in ALLOWED_LABEL_LANES:
-                raise ValueError(f"Unsupported label lane: {label_lane}")
+                print(
+                    f"Skipping unsupported label lane: {product_name}/{label_lane}",
+                    file=sys.stderr,
+                )
+                continue
+
+            direct_images = [
+                image_path
+                for image_path in sorted(lane_dir.iterdir())
+                if image_path.is_file() and not image_path.name.startswith(".")
+            ]
+            if direct_images:
+                image_rows.extend(
+                    BatchImageRow(
+                        product_name=product_name,
+                        label_lane=label_lane,
+                        batch_name="batch_01",
+                        filename=image_path.name,
+                        relative_path=str(image_path.relative_to(project_root.parents[0])).replace("\\", "/"),
+                    )
+                    for image_path in direct_images
+                )
+                continue
 
             for batch_dir in sorted(lane_dir.iterdir()):
                 if not batch_dir.is_dir() or batch_dir.name.startswith("."):
