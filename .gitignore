@@ -10,6 +10,7 @@ __pycache__/
 dataset/final/
 dataset/working/normalized/**/*.jpg
 dataset/working/merged_public/**/*.jpg
+dataset/working/manual_normalized/
 dataset/archive/**/*.txt
 dataset/metadata/master_metadata.csv
 dataset/metadata/form_image_metadata.csv
