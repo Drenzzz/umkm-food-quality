@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, datetime
 
 from sqlalchemy import delete, select
@@ -11,6 +12,9 @@ from app.core.password_reset_token import (
     hash_password_reset_token,
 )
 from app.db.models import EmailVerification, User
+
+
+logger = logging.getLogger(__name__)
 
 
 class InvalidEmailVerificationTokenError(Exception):
@@ -33,11 +37,14 @@ def send_email_verification(db: Session, user: User) -> None:
     db.commit()
 
     link = build_email_verification_link(raw_token)
-    get_email_sender().send(
-        recipient=user.email,
-        subject="Verify your email",
-        body=f"Use this link to verify your email: {link}",
-    )
+    try:
+        get_email_sender().send(
+            recipient=user.email,
+            subject="Verify your email",
+            body=f"Use this link to verify your email: {link}",
+        )
+    except Exception:
+        logger.exception("Email verification delivery failed for user_id=%s", user.id)
 
 
 def verify_email_with_token(db: Session, token: str) -> User:

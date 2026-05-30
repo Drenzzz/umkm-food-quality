@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from httpx import Response
 
 
-TEST_DB_PATH = Path("/tmp/umkm_food_quality_history_admin_health.sqlite3")
+TEST_DB_PATH = Path(f"/tmp/umkm_food_quality_history_admin_health_{os.getpid()}.sqlite3")
 
 os.environ["APP_ENV"] = "test"
 os.environ["DATABASE_URL"] = f"sqlite+pysqlite:///{TEST_DB_PATH}"
@@ -18,6 +18,8 @@ os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
 os.environ["MODEL_PATH"] = "ml/model/exp_001_industry_biscuit_only/model.keras"
 os.environ["CLASS_INDICES_PATH"] = "ml/model/exp_001_industry_biscuit_only/class_indices.json"
 os.environ["CORS_ORIGINS"] = "http://localhost:3000"
+os.environ["EMAIL_BACKEND"] = "console"
+os.environ["VERIFY_EMAIL_FRONTEND_URL"] = "http://localhost:5173/verify-email"
 os.environ["ALLOWED_IMAGE_DOMAINS"] = ""
 
 if TEST_DB_PATH.exists():

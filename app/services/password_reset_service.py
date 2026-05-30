@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, datetime
 
 from sqlalchemy import delete, select
@@ -13,6 +14,9 @@ from app.core.password_reset_token import (
 from app.core.security import hash_password
 from app.db.models import PasswordReset, User
 from app.services.auth_service import get_user_by_email
+
+
+logger = logging.getLogger(__name__)
 
 
 class InvalidPasswordResetTokenError(Exception):
@@ -36,11 +40,14 @@ def request_password_reset(db: Session, email: str) -> None:
     db.commit()
 
     link = build_password_reset_link(raw_token)
-    get_email_sender().send(
-        recipient=user.email,
-        subject="Reset your password",
-        body=f"Use this link to reset your password: {link}",
-    )
+    try:
+        get_email_sender().send(
+            recipient=user.email,
+            subject="Reset your password",
+            body=f"Use this link to reset your password: {link}",
+        )
+    except Exception:
+        logger.exception("Password reset delivery failed for user_id=%s", user.id)
 
 
 def reset_password_with_token(db: Session, token: str, new_password: str) -> User:

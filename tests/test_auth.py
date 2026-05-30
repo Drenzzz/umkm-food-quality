@@ -1,24 +1,25 @@
 import os
 from pathlib import Path
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
 
-TEST_DB_PATH = Path("/tmp/umkm_food_quality_auth_test.sqlite3")
+TEST_DB_PATH = Path(f"/tmp/umkm_food_quality_auth_test_{os.getpid()}.sqlite3")
 
-os.environ.setdefault("APP_ENV", "test")
-os.environ.setdefault("DATABASE_URL", f"sqlite+pysqlite:///{TEST_DB_PATH}")
-os.environ.setdefault("SECRET_KEY", "test-secret-key")
-os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
-os.environ.setdefault("MODEL_PATH", "ml/model/exp_001_industry_biscuit_only/model.keras")
-os.environ.setdefault("CLASS_INDICES_PATH", "ml/model/exp_001_industry_biscuit_only/class_indices.json")
-os.environ.setdefault("CORS_ORIGINS", "http://localhost:3000")
-os.environ.setdefault("EMAIL_BACKEND", "console")
-os.environ.setdefault("PASSWORD_RESET_TOKEN_TTL_MINUTES", "15")
-os.environ.setdefault("RESET_PASSWORD_FRONTEND_URL", "http://localhost:5173/reset-password")
-os.environ.setdefault("EMAIL_VERIFICATION_TOKEN_TTL_MINUTES", "30")
-os.environ.setdefault("VERIFY_EMAIL_FRONTEND_URL", "http://localhost:5173/verify-email")
-os.environ.setdefault("REQUIRE_VERIFIED_EMAIL", "false")
+os.environ["APP_ENV"] = "test"
+os.environ["DATABASE_URL"] = f"sqlite+pysqlite:///{TEST_DB_PATH}"
+os.environ["SECRET_KEY"] = "test-secret-key"
+os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
+os.environ["MODEL_PATH"] = "ml/model/exp_001_industry_biscuit_only/model.keras"
+os.environ["CLASS_INDICES_PATH"] = "ml/model/exp_001_industry_biscuit_only/class_indices.json"
+os.environ["CORS_ORIGINS"] = "http://localhost:3000"
+os.environ["EMAIL_BACKEND"] = "console"
+os.environ["PASSWORD_RESET_TOKEN_TTL_MINUTES"] = "15"
+os.environ["RESET_PASSWORD_FRONTEND_URL"] = "http://localhost:5173/reset-password"
+os.environ["EMAIL_VERIFICATION_TOKEN_TTL_MINUTES"] = "30"
+os.environ["VERIFY_EMAIL_FRONTEND_URL"] = "http://localhost:5173/verify-email"
+os.environ["REQUIRE_VERIFIED_EMAIL"] = "false"
 
 if TEST_DB_PATH.exists():
     TEST_DB_PATH.unlink()
@@ -524,6 +525,58 @@ def test_register_sends_email_verification_and_verify_email_succeeds() -> None:
             assert user.email_verified_at is not None
 
 
+def test_register_succeeds_even_if_verification_email_delivery_fails() -> None:
+    with patch("app.services.email_verification_service.get_email_sender") as mocked_sender_factory:
+        mocked_sender_factory.return_value.send.side_effect = RuntimeError("SMTP unavailable")
+
+        with TestClient(app) as client:
+            register_response = client.post(
+                "/auth/register",
+                json={
+                    "name": "Fallback Verify User",
+                    "email": "fallback-verify@example.com",
+                    "password": "password123",
+                },
+            )
+            assert register_response.status_code == 201
+
+            with SessionLocal() as db:
+                user = db.scalar(select(User).where(User.email == "fallback-verify@example.com"))
+                verification = db.scalar(select(EmailVerification).where(EmailVerification.user_id == user.id))
+                assert user is not None
+                assert verification is not None
+
+
+def test_forgot_password_succeeds_even_if_email_delivery_fails() -> None:
+    with TestClient(app) as client:
+        register_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Fallback Reset User",
+                "email": "fallback-reset@example.com",
+                "password": "password123",
+            },
+        )
+        assert register_response.status_code == 201
+
+    with patch("app.services.password_reset_service.get_email_sender") as mocked_sender_factory:
+        mocked_sender_factory.return_value.send.side_effect = RuntimeError("SMTP unavailable")
+
+        with TestClient(app) as client:
+            forgot_response = client.post(
+                "/auth/forgot-password",
+                json={"email": "fallback-reset@example.com"},
+            )
+            assert forgot_response.status_code == 200
+            assert forgot_response.json()["message"] == "If the email exists, a reset link has been sent"
+
+            with SessionLocal() as db:
+                user = db.scalar(select(User).where(User.email == "fallback-reset@example.com"))
+                password_reset = db.scalar(select(PasswordReset).where(PasswordReset.user_id == user.id))
+                assert user is not None
+                assert password_reset is not None
+
+
 def test_resend_verification_creates_new_record_for_unverified_user() -> None:
     with TestClient(app) as client:
         register_response = client.post(
@@ -556,3 +609,43 @@ def test_resend_verification_creates_new_record_for_unverified_user() -> None:
         with SessionLocal() as db:
             verifications = list(db.scalars(select(EmailVerification).where(EmailVerification.user_id == register_response.json()["id"])))
             assert len(verifications) == 1
+
+
+def test_resend_verification_succeeds_even_if_email_delivery_fails() -> None:
+    with TestClient(app) as client:
+        register_response = client.post(
+            "/auth/register",
+            json={
+                "name": "Resend Verify Fallback User",
+                "email": "resend-verify-fallback@example.com",
+                "password": "password123",
+            },
+        )
+        assert register_response.status_code == 201
+
+        login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "resend-verify-fallback@example.com",
+                "password": "password123",
+            },
+        )
+        assert login_response.status_code == 200
+        token = login_response.json()["access_token"]
+
+    with patch("app.services.email_verification_service.get_email_sender") as mocked_sender_factory:
+        mocked_sender_factory.return_value.send.side_effect = RuntimeError("SMTP unavailable")
+
+        with TestClient(app) as client:
+            resend_response = client.post(
+                "/auth/resend-verification",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            assert resend_response.status_code == 200
+            assert resend_response.json()["message"] == "Verification email sent successfully"
+
+            with SessionLocal() as db:
+                verifications = list(
+                    db.scalars(select(EmailVerification).where(EmailVerification.user_id == register_response.json()["id"]))
+                )
+                assert len(verifications) == 1
