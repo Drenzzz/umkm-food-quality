@@ -164,3 +164,26 @@ Saat data form mulai memadai, step berikutnya adalah:
 3. merge ke metadata utama
 4. retrain atau fine-tune model baseline
 5. evaluasi ulang threshold dan performa akhir
+
+## Manual Dataset-New Promotion
+
+Setelah baseline publik selesai, fase serving aktif dipindahkan ke dataset manual lokal yang lebih representatif terhadap foto smartphone nyata.
+
+Eksperimen serving aktif:
+
+- `exp_007_manual_with_stik`
+
+Scope aktif untuk eksperimen ini:
+
+- `biskuit`
+- `kukis`
+- `keripik`
+- `kerupuk`
+- `stik`
+
+Catatan keputusan:
+
+1. Dataset sumber diganti penuh ke `dataset-new/` dan tidak digabung dengan batch manual lama `exp_006`.
+2. Folder `stik/non_sellable_old` tidak dipakai untuk training aktif.
+3. Threshold serving dikunci di `0.3` sebagai titik kompromi agar recall `tidak_layak_jual` tetap tinggi tanpa membuat false reject produk layak seagresif threshold yang lebih rendah.
+4. Baseline publik tetap dipertahankan sebagai referensi eksperimen, tetapi bukan model serving utama.

@@ -104,3 +104,22 @@ Untuk fase baseline, keputusan kerja yang dipakai adalah:
 2. Baseline `keripik` bertumpu pada `taterdat-chip` dan `Pepsico`.
 3. `kerupuk` ditandai sebagai gap domain dan tidak dipaksa dipenuhi dari dataset publik saat ini.
 4. Data Google Form nanti masuk sebagai refinement layer, bukan syarat untuk memulai pipeline baseline.
+
+## Manual Dataset-New Serving Snapshot
+
+Snapshot serving manual terbaru menggantikan batch manual kecil `exp_006`.
+
+| Product Name | Sellable | Non-Sellable | Total |
+|---|---:|---:|---:|
+| `biskuit` | 55 | 51 | 106 |
+| `kukis` | 51 | 50 | 101 |
+| `keripik` | 50 | 50 | 100 |
+| `kerupuk` | 51 | 51 | 102 |
+| `stik` | 50 | 50 | 100 |
+
+Serving notes:
+
+1. `biskuit` dan `kukis` tetap digabung ke `product_domain = biskuit_kukis` di metadata training.
+2. `stik` dipromosikan sebagai domain aktif baru dan tidak dilebur ke `keripik`.
+3. `stik/non_sellable_old` tidak masuk snapshot aktif.
+4. Snapshot ini dipakai oleh `exp_007_manual_with_stik` sebagai sumber model serving aktif.

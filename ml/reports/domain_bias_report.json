@@ -1,36 +1,66 @@
 {
   "models": [
     {
-      "model_id": "exp_005_combined_public_baseline",
+      "model_id": "exp_007_manual_with_stik",
       "domains": {
         "biskuit_kukis": {
-          "sample_count": 359,
+          "sample_count": 30,
           "predicted_label_counts": {
-            "layak_jual": 303,
-            "tidak_layak_jual": 56
+            "tidak_layak_jual": 18,
+            "layak_jual": 12
           },
           "expected_label_counts": {
-            "layak_jual": 285,
-            "tidak_layak_jual": 74
+            "tidak_layak_jual": 14,
+            "layak_jual": 16
           },
           "recall_by_label": {
-            "layak_jual": 1.0,
-            "tidak_layak_jual": 0.756757
+            "layak_jual": 0.75,
+            "tidak_layak_jual": 1.0
           }
         },
         "keripik": {
-          "sample_count": 141,
+          "sample_count": 14,
           "predicted_label_counts": {
-            "layak_jual": 76,
-            "tidak_layak_jual": 65
+            "tidak_layak_jual": 11,
+            "layak_jual": 3
           },
           "expected_label_counts": {
-            "layak_jual": 75,
-            "tidak_layak_jual": 66
+            "tidak_layak_jual": 7,
+            "layak_jual": 7
+          },
+          "recall_by_label": {
+            "layak_jual": 0.428571,
+            "tidak_layak_jual": 1.0
+          }
+        },
+        "kerupuk": {
+          "sample_count": 14,
+          "predicted_label_counts": {
+            "tidak_layak_jual": 7,
+            "layak_jual": 7
+          },
+          "expected_label_counts": {
+            "tidak_layak_jual": 7,
+            "layak_jual": 7
           },
           "recall_by_label": {
             "layak_jual": 1.0,
-            "tidak_layak_jual": 0.984848
+            "tidak_layak_jual": 1.0
+          }
+        },
+        "stik": {
+          "sample_count": 14,
+          "predicted_label_counts": {
+            "tidak_layak_jual": 7,
+            "layak_jual": 7
+          },
+          "expected_label_counts": {
+            "tidak_layak_jual": 7,
+            "layak_jual": 7
+          },
+          "recall_by_label": {
+            "layak_jual": 1.0,
+            "tidak_layak_jual": 1.0
           }
         }
       }

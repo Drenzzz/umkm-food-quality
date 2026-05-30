@@ -1,9 +1,9 @@
 {
-  "experiment_id": "exp_006_manual_dataset_scrape_baseline",
+  "experiment_id": "exp_007_manual_with_stik",
   "model_family": "MobileNetV2",
-  "model_path": "ml/model/exp_006_manual_dataset_scrape_baseline/model.keras",
-  "class_indices_path": "ml/model/exp_006_manual_dataset_scrape_baseline/class_indices.json",
-  "threshold": 0.5,
-  "selection_reason": "Manual baseline promoted for serving sanity checks after public baseline over-predicted non-sellable results on real sample URLs. Threshold kept at 0.5 for stable behavior comparison.",
-  "selection_scope": "manual_dataset_scrape_baseline"
+  "model_path": "ml/model/exp_007_manual_with_stik/model.keras",
+  "class_indices_path": "ml/model/exp_007_manual_with_stik/class_indices.json",
+  "threshold": 0.3,
+  "selection_reason": "Dataset-new manual baseline promoted after adding stik as a dedicated domain. Serving threshold is pinned to 0.3 as a compromise point that keeps non-sellable recall high while reducing false rejects more than the lower serving thresholds.",
+  "selection_scope": "dataset_new_manual_with_stik"
 }
