@@ -1,22 +1,26 @@
 {
-  "prepared_count": 230,
+  "prepared_count": 509,
   "skipped_count": 0,
   "summary_by_product": {
     "biskuit": {
-      "tidak_layak_jual": 31,
-      "layak_jual": 29
+      "tidak_layak_jual": 51,
+      "layak_jual": 55
     },
     "keripik": {
-      "tidak_layak_jual": 23,
-      "layak_jual": 32
+      "tidak_layak_jual": 50,
+      "layak_jual": 50
     },
     "kerupuk": {
-      "tidak_layak_jual": 27,
-      "layak_jual": 27
+      "tidak_layak_jual": 51,
+      "layak_jual": 51
     },
     "kukis": {
-      "tidak_layak_jual": 30,
-      "layak_jual": 31
+      "tidak_layak_jual": 50,
+      "layak_jual": 51
+    },
+    "stik": {
+      "tidak_layak_jual": 50,
+      "layak_jual": 50
     }
   },
   "errors": []
