@@ -9,7 +9,7 @@
   },
   "models": [
     {
-      "model_id": "exp_007_manual_with_stik",
+      "model_id": "umkm_food_quality_v1",
       "sample_count": 72,
       "raw_score_min": 0.000206,
       "raw_score_max": 0.999813,
