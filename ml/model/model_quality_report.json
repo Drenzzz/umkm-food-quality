@@ -11,22 +11,23 @@
     {
       "model_id": "umkm_food_quality_v1",
       "sample_count": 72,
+      "threshold": 0.1,
       "raw_score_min": 0.000206,
       "raw_score_max": 0.999813,
       "raw_score_unique_count": 72,
       "predicted_label_counts": {
-        "tidak_layak_jual": 43,
-        "layak_jual": 29
+        "tidak_layak_jual": 50,
+        "layak_jual": 22
       },
       "expected_label_counts": {
         "tidak_layak_jual": 35,
         "layak_jual": 37
       },
       "recall_by_label": {
-        "layak_jual": 0.783784,
+        "layak_jual": 0.594595,
         "tidak_layak_jual": 1.0
       },
-      "dominant_prediction_share": 0.597222,
+      "dominant_prediction_share": 0.694444,
       "collapse_flags": [],
       "passed_quality_gate": true
     }
