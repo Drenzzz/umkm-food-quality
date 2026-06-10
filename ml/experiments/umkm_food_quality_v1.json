@@ -5,7 +5,7 @@
   "goal": "Serve one final binary classifier for layak_jual versus tidak_layak_jual using the curated dataset-new snapshot.",
   "dataset_scope": {
     "dataset_slugs": [
-      "dataset_new_manual"
+      "dataset_scrape_manual"
     ],
     "product_domains": [
       "biskuit_kukis",
