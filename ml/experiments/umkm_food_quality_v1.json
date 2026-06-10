@@ -1,0 +1,39 @@
+{
+  "experiment_id": "umkm_food_quality_v1",
+  "experiment_name": "UMKM Food Quality Final Binary Model",
+  "status": "active",
+  "goal": "Serve one final binary classifier for layak_jual versus tidak_layak_jual using the curated dataset-new snapshot.",
+  "dataset_scope": {
+    "dataset_slugs": [
+      "dataset_new_manual"
+    ],
+    "product_domains": [
+      "biskuit_kukis",
+      "keripik",
+      "kerupuk",
+      "stik"
+    ],
+    "allowed_labels": [
+      "layak_jual",
+      "tidak_layak_jual"
+    ]
+  },
+  "training_plan": {
+    "input_metadata": "dataset/metadata/manual_prepared_metadata.csv",
+    "split_metadata": "dataset/metadata/manual_split_metadata.csv",
+    "model_family": "MobileNetV2",
+    "evaluation_priority": "recall_tidak_layak_jual"
+  },
+  "historical_lineage": {
+    "replaces": [
+      "exp_001_industry_biscuit_only",
+      "exp_002_taterdat_chip_only",
+      "exp_003_pepsico",
+      "exp_004_combined_keripik_public",
+      "exp_005_combined_public_baseline",
+      "exp_006_manual_dataset_scrape_baseline",
+      "exp_007_manual_with_stik"
+    ],
+    "notes": "Legacy experiment configs are archived under ml/experiments/archive/ and are no longer part of the active serving flow."
+  }
+}
