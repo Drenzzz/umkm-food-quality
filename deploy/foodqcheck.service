@@ -1,0 +1,27 @@
+[Unit]
+Description=UMKM Food Quality API (Gunicorn + Uvicorn)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=notify
+User=foodqcheck
+Group=foodqcheck
+WorkingDirectory=/opt/foodqcheck
+Environment="PATH=/opt/foodqcheck/.venv/bin"
+EnvironmentFile=/opt/foodqcheck/.env
+ExecStart=/opt/foodqcheck/.venv/bin/gunicorn app.main:app \
+  --worker-class uvicorn.workers.UvicornWorker \
+  --workers 2 \
+  --bind 127.0.0.1:8000 \
+  --timeout 60 \
+  --graceful-timeout 30 \
+  --keep-alive 5 \
+  --access-logfile - \
+  --error-logfile -
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
