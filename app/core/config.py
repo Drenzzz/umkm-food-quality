@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     email_verification_token_ttl_minutes: int = Field(default=30, alias="EMAIL_VERIFICATION_TOKEN_TTL_MINUTES")
     verify_email_frontend_url: str = Field(default="foodqcheck://verify-email", alias="VERIFY_EMAIL_FRONTEND_URL")
     require_verified_email: bool = Field(default=False, alias="REQUIRE_VERIFIED_EMAIL")
+    allowed_hosts: str = Field(default="localhost,127.0.0.1", alias="ALLOWED_HOSTS")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
@@ -46,6 +47,10 @@ class Settings(BaseSettings):
     @property
     def allowed_image_domain_list(self) -> list[str]:
         return [domain.strip().lower() for domain in self.allowed_image_domains.split(",") if domain.strip()]
+
+    @property
+    def allowed_host_list(self) -> list[str]:
+        return [host.strip() for host in self.allowed_hosts.split(",") if host.strip()]
 
 
 def get_settings() -> Settings:

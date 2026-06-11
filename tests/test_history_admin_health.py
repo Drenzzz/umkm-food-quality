@@ -31,8 +31,6 @@ from app.db.models import Detection, User  # noqa: E402
 from app.db.session import SessionLocal, engine  # noqa: E402
 from app.main import app  # noqa: E402
 
-get_settings.cache_clear()
-
 FIXTURE_IMAGE = Path("tests/fixtures/sample_keripik.jpg").read_bytes()
 MOCK_IMAGE_URL = "https://mock.example.com/sample.jpg"
 

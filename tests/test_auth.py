@@ -20,6 +20,7 @@ os.environ["RESET_PASSWORD_FRONTEND_URL"] = "foodqcheck://reset-password"
 os.environ["EMAIL_VERIFICATION_TOKEN_TTL_MINUTES"] = "30"
 os.environ["VERIFY_EMAIL_FRONTEND_URL"] = "foodqcheck://verify-email"
 os.environ["REQUIRE_VERIFIED_EMAIL"] = "false"
+os.environ["ALLOWED_HOSTS"] = "localhost,127.0.0.1,testserver"
 
 if TEST_DB_PATH.exists():
     TEST_DB_PATH.unlink()
