@@ -11,8 +11,8 @@ os.environ.setdefault("APP_ENV", "test")
 os.environ.setdefault("DATABASE_URL", f"sqlite+pysqlite:///{TEST_DB_PATH}")
 os.environ.setdefault("SECRET_KEY", "test-secret-key")
 os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
-os.environ.setdefault("MODEL_PATH", "ml/model/exp_001_industry_biscuit_only/model.keras")
-os.environ.setdefault("CLASS_INDICES_PATH", "ml/model/exp_001_industry_biscuit_only/class_indices.json")
+os.environ.setdefault("MODEL_PATH", "ml/model/umkm_food_quality_v1/model.keras")
+os.environ.setdefault("CLASS_INDICES_PATH", "ml/model/umkm_food_quality_v1/class_indices.json")
 os.environ.setdefault("CORS_ORIGINS", "http://localhost:3000")
 os.environ["ALLOWED_IMAGE_DOMAINS"] = ""
 
