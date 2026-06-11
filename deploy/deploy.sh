@@ -11,7 +11,7 @@ cd "${APP_DIR}"
 
 if [[ ! -f ".env" ]]; then
   echo "[FAIL] .env not found in ${APP_DIR}."
-  echo "       Copy deploy/.env.production to .env and fill in real secrets first."
+  echo "       Copy deploy/env.production.template to .env and fill in real secrets first."
   exit 1
 fi
 
@@ -38,18 +38,25 @@ if [[ ! -f "ml/model/umkm_food_quality_v1/class_indices.json" ]]; then
   echo "[WARN] class_indices.json not found. Run deploy/copy-model.sh to upload it."
 fi
 
-echo "=== 5/7 Ensure service unit is installed"
+echo "=== 5/7 Ensure web app build is present"
+if [[ ! -d "web" ]] || [[ -z "$(ls -A web 2>/dev/null)" ]]; then
+  echo "[WARN] web/ is missing or empty. Build from the mobile project with:"
+  echo "       cd ../umkm-food-quality-mobile && ./scripts/build-web.sh"
+  echo "       Then rsync dist/ to ${APP_DIR}/web/"
+fi
+
+echo "=== 6/7 Ensure service unit is installed"
 if [[ ! -f "/etc/systemd/system/${SERVICE_NAME}.service" ]]; then
   cp deploy/foodqcheck.service /etc/systemd/system/${SERVICE_NAME}.service
   systemctl daemon-reload
   systemctl enable "${SERVICE_NAME}.service"
 fi
 
-echo "=== 6/7 Reload systemd and restart service"
+echo "=== 7/7 Reload systemd and restart service"
 systemctl daemon-reload
 systemctl restart "${SERVICE_NAME}.service"
 
-echo "=== 7/7 Health check"
+echo "=== Health check"
 sleep 2
 if curl --fail --silent --max-time 5 http://127.0.0.1:8000/health >/dev/null; then
   echo "[OK] Backend health check passed"
