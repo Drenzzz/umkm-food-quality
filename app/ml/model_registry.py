@@ -88,7 +88,7 @@ def discover_model_artifacts(registry_root: Path, active_experiment_id: str, qua
         return []
 
     artifacts: list[ModelArtifact] = []
-    for model_dir in sorted(registry_root.glob("exp_*")):
+    for model_dir in sorted(registry_root.glob("*")):
         if not model_dir.is_dir():
             continue
 

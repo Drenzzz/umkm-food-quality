@@ -149,7 +149,7 @@ def discover_model_artifacts(model_root: Path, active_config_path: Path) -> list
     active_config = load_json(PROJECT_ROOT / active_config_path)
     active_model_path = active_config.get("model_path")
     models: list[ModelArtifact] = []
-    for model_dir in sorted(root.glob("exp_*")):
+    for model_dir in sorted(root.glob("*")):
         manifest = load_json(model_dir / "artifact_manifest.json")
         experiment_id = str(manifest.get("experiment_id", model_dir.name))
         models.append(
