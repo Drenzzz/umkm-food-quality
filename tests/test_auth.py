@@ -39,7 +39,7 @@ def test_auth_register_login_and_me_flow() -> None:
             json={
                 "name": "Test User",
                 "email": "test@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -49,7 +49,7 @@ def test_auth_register_login_and_me_flow() -> None:
             "/auth/login",
             json={
                 "email": "test@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert login_response.status_code == 200
@@ -70,7 +70,7 @@ def test_register_duplicate_email_returns_409() -> None:
             json={
                 "name": "Duplicate User One",
                 "email": "duplicate@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert first_response.status_code == 201
@@ -80,7 +80,7 @@ def test_register_duplicate_email_returns_409() -> None:
             json={
                 "name": "Duplicate User Two",
                 "email": "duplicate@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert second_response.status_code == 409
@@ -94,7 +94,7 @@ def test_update_profile_with_current_password() -> None:
             json={
                 "name": "Profile User",
                 "email": "profile@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -103,7 +103,7 @@ def test_update_profile_with_current_password() -> None:
             "/auth/login",
             json={
                 "email": "profile@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert login_response.status_code == 200
@@ -115,7 +115,7 @@ def test_update_profile_with_current_password() -> None:
             json={
                 "name": "Updated Profile User",
                 "email": "profile-updated@example.com",
-                "current_password": "password123",
+                "current_password": "Password123",
             },
         )
         assert update_response.status_code == 200
@@ -130,7 +130,7 @@ def test_update_profile_rejects_wrong_current_password() -> None:
             json={
                 "name": "Wrong Password User",
                 "email": "wrong-password@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -139,7 +139,7 @@ def test_update_profile_rejects_wrong_current_password() -> None:
             "/auth/login",
             json={
                 "email": "wrong-password@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert login_response.status_code == 200
@@ -165,7 +165,7 @@ def test_update_profile_rejects_duplicate_email() -> None:
             json={
                 "name": "First Profile User",
                 "email": "first-profile@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert first_response.status_code == 201
@@ -175,7 +175,7 @@ def test_update_profile_rejects_duplicate_email() -> None:
             json={
                 "name": "Second Profile User",
                 "email": "second-profile@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert second_response.status_code == 201
@@ -184,7 +184,7 @@ def test_update_profile_rejects_duplicate_email() -> None:
             "/auth/login",
             json={
                 "email": "second-profile@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert login_response.status_code == 200
@@ -196,7 +196,7 @@ def test_update_profile_rejects_duplicate_email() -> None:
             json={
                 "name": "Second Profile User",
                 "email": "first-profile@example.com",
-                "current_password": "password123",
+                "current_password": "Password123",
             },
         )
         assert update_response.status_code == 409
@@ -210,7 +210,7 @@ def test_change_password_invalidates_existing_token() -> None:
             json={
                 "name": "Password Change User",
                 "email": "password-change@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -219,7 +219,7 @@ def test_change_password_invalidates_existing_token() -> None:
             "/auth/login",
             json={
                 "email": "password-change@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert login_response.status_code == 200
@@ -229,8 +229,8 @@ def test_change_password_invalidates_existing_token() -> None:
             "/auth/change-password",
             headers={"Authorization": f"Bearer {old_token}"},
             json={
-                "current_password": "password123",
-                "new_password": "newpassword123",
+                "current_password": "Password123",
+                "new_password": "Newpassword123",
             },
         )
         assert change_response.status_code == 200
@@ -245,7 +245,7 @@ def test_change_password_invalidates_existing_token() -> None:
             "/auth/login",
             json={
                 "email": "password-change@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert old_password_login_response.status_code == 401
@@ -254,7 +254,7 @@ def test_change_password_invalidates_existing_token() -> None:
             "/auth/login",
             json={
                 "email": "password-change@example.com",
-                "password": "newpassword123",
+                "password": "Newpassword123",
             },
         )
         assert new_password_login_response.status_code == 200
@@ -267,7 +267,7 @@ def test_change_password_rejects_wrong_current_password() -> None:
             json={
                 "name": "Rejected Password Change User",
                 "email": "rejected-password-change@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -276,7 +276,7 @@ def test_change_password_rejects_wrong_current_password() -> None:
             "/auth/login",
             json={
                 "email": "rejected-password-change@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert login_response.status_code == 200
@@ -287,7 +287,7 @@ def test_change_password_rejects_wrong_current_password() -> None:
             headers={"Authorization": f"Bearer {token}"},
             json={
                 "current_password": "wrongpass123",
-                "new_password": "newpassword123",
+                "new_password": "Newpassword123",
             },
         )
         assert change_response.status_code == 400
@@ -311,7 +311,7 @@ def test_reset_password_accepts_valid_token_and_rejects_reuse() -> None:
             json={
                 "name": "Reset Password User",
                 "email": "reset-password@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -331,7 +331,7 @@ def test_reset_password_accepts_valid_token_and_rejects_reuse() -> None:
             "/auth/reset-password",
             json={
                 "token": reset_token,
-                "new_password": "newpassword123",
+                "new_password": "Newpassword123",
             },
         )
         assert invalid_response.status_code == 400
@@ -347,7 +347,7 @@ def test_reset_password_accepts_valid_token_and_rejects_reuse() -> None:
             "/auth/reset-password",
             json={
                 "token": raw_token,
-                "new_password": "newpassword123",
+                "new_password": "Newpassword123",
             },
         )
         assert reset_response.status_code == 200
@@ -357,7 +357,7 @@ def test_reset_password_accepts_valid_token_and_rejects_reuse() -> None:
             "/auth/reset-password",
             json={
                 "token": raw_token,
-                "new_password": "anothernewpassword123",
+                "new_password": "Anotherpassword123",
             },
         )
         assert reused_response.status_code == 400
@@ -367,7 +367,7 @@ def test_reset_password_accepts_valid_token_and_rejects_reuse() -> None:
             "/auth/login",
             json={
                 "email": "reset-password@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert old_password_login_response.status_code == 401
@@ -376,7 +376,7 @@ def test_reset_password_accepts_valid_token_and_rejects_reuse() -> None:
             "/auth/login",
             json={
                 "email": "reset-password@example.com",
-                "password": "newpassword123",
+                "password": "Newpassword123",
             },
         )
         assert new_password_login_response.status_code == 200
@@ -389,7 +389,7 @@ def test_delete_account_removes_user_and_related_records() -> None:
             json={
                 "name": "Delete Account User",
                 "email": "delete-account@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -398,7 +398,7 @@ def test_delete_account_removes_user_and_related_records() -> None:
             "/auth/login",
             json={
                 "email": "delete-account@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert login_response.status_code == 200
@@ -433,7 +433,7 @@ def test_delete_account_removes_user_and_related_records() -> None:
             "DELETE",
             "/auth/me",
             headers={"Authorization": f"Bearer {token}"},
-            json={"current_password": "password123"},
+            json={"current_password": "Password123"},
         )
         assert delete_response.status_code == 200
         assert delete_response.json()["message"] == "Account deleted successfully"
@@ -442,7 +442,7 @@ def test_delete_account_removes_user_and_related_records() -> None:
             "/auth/login",
             json={
                 "email": "delete-account@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert login_after_delete_response.status_code == 401
@@ -467,7 +467,7 @@ def test_delete_account_rejects_wrong_current_password() -> None:
             json={
                 "name": "Rejected Delete User",
                 "email": "rejected-delete@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -476,7 +476,7 @@ def test_delete_account_rejects_wrong_current_password() -> None:
             "/auth/login",
             json={
                 "email": "rejected-delete@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert login_response.status_code == 200
@@ -499,7 +499,7 @@ def test_register_sends_email_verification_and_verify_email_succeeds() -> None:
             json={
                 "name": "Verify Email User",
                 "email": "verify-email@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -535,7 +535,7 @@ def test_register_succeeds_even_if_verification_email_delivery_fails() -> None:
                 json={
                     "name": "Fallback Verify User",
                     "email": "fallback-verify@example.com",
-                    "password": "password123",
+                    "password": "Password123",
                 },
             )
             assert register_response.status_code == 201
@@ -554,7 +554,7 @@ def test_forgot_password_succeeds_even_if_email_delivery_fails() -> None:
             json={
                 "name": "Fallback Reset User",
                 "email": "fallback-reset@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -584,7 +584,7 @@ def test_resend_verification_creates_new_record_for_unverified_user() -> None:
             json={
                 "name": "Resend Verify User",
                 "email": "resend-verify@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -593,7 +593,7 @@ def test_resend_verification_creates_new_record_for_unverified_user() -> None:
             "/auth/login",
             json={
                 "email": "resend-verify@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert login_response.status_code == 200
@@ -618,7 +618,7 @@ def test_resend_verification_succeeds_even_if_email_delivery_fails() -> None:
             json={
                 "name": "Resend Verify Fallback User",
                 "email": "resend-verify-fallback@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
@@ -627,7 +627,7 @@ def test_resend_verification_succeeds_even_if_email_delivery_fails() -> None:
             "/auth/login",
             json={
                 "email": "resend-verify-fallback@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert login_response.status_code == 200

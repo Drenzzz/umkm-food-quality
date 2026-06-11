@@ -58,6 +58,7 @@ def login_user(request: Request, payload: LoginRequest, db: Session = Depends(ge
         access_token=create_access_token(str(user.id)),
         token_type="bearer",
         expires_in_minutes=settings.access_token_expire_minutes,
+        email_verified_at=user.email_verified_at,
     )
 
 
