@@ -6,9 +6,9 @@ Dokumen ini menjadi catatan deploy backend fase awal.
 
 Target deploy saat ini adalah backend API yang memakai satu public baseline model aktif.
 
-Model aktif sementara:
+Model aktif saat ini:
 
-- `exp_006_manual_dataset_scrape_baseline`
+- `umkm_food_quality_v1` (MobileNetV2, threshold 0.1)
 
 Manifest model aktif:
 

@@ -1,104 +1,96 @@
 # Environment Variables
 
-Dokumen ini menjadi acuan utama untuk environment variable backend + ML pada fase baseline.
+Reference for all backend and ML environment variables.
 
-## Current Baseline Variables
+## Current Variables
 
 | Variable | Required | Example | Purpose |
 |---|---|---|---|
-| `APP_ENV` | Yes | `development` | Menandai konteks runtime aktif seperti development atau production. |
-| `DATABASE_URL` | Yes | `postgresql://postgres:change_me@localhost:5432/umkm_food_quality` | Connection string database backend. |
-| `SECRET_KEY` | Yes | `change-this-secret-key` | Kunci untuk signing token dan kebutuhan security backend. |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Yes | `60` | Masa berlaku access token dalam menit. |
-| `MODEL_PATH` | Yes | `ml/model/exp_005_combined_public_baseline/model.keras` | Lokasi model inference yang akan dibaca backend. |
-| `CLASS_INDICES_PATH` | Yes | `ml/model/exp_005_combined_public_baseline/class_indices.json` | Lokasi file mapping label hasil training. |
-| `CORS_ORIGINS` | Yes | `http://localhost:3000,http://localhost:5173` | Daftar origin yang diizinkan untuk akses frontend atau client. |
+| `APP_ENV` | Yes | `development` | Runtime context: development, test, or production. |
+| `DATABASE_URL` | Yes | `postgresql://postgres:change_me@localhost:5432/umkm_food_quality` | PostgreSQL connection string. |
+| `SECRET_KEY` | Yes | `change-this-secret-key` | JWT signing key and security purposes. |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Yes | `60` | Access token TTL in minutes. |
+| `MODEL_PATH` | Yes | `ml/model/umkm_food_quality_v1/model.keras` | Active model inference path. |
+| `CLASS_INDICES_PATH` | Yes | `ml/model/umkm_food_quality_v1/class_indices.json` | Label index mapping for active model. |
+| `MODEL_REGISTRY_PATH` | No | `ml/model` | Root directory for multi-model discovery. |
+| `ACTIVE_MODEL_CONFIG_PATH` | No | `ml/model/active_model.json` | Active model selector config. |
+| `MODEL_QUALITY_REPORT_PATH` | No | `ml/model/model_quality_report.json` | Quality gate report for model validation. |
+| `MODEL_QUALITY_STRICT` | No | `false` | Fail startup if active model fails quality gate. |
+| `ENABLE_MULTI_MODEL_COMPARISON` | No | `false` | Enable admin multi-model comparison endpoint. |
+| `CORS_ORIGINS` | Yes | `http://localhost:3000,http://localhost:5173` | Comma-separated allowed CORS origins. |
+| `ALLOWED_IMAGE_DOMAINS` | No | `res.cloudinary.com` | Comma-separated allowed image hostnames for /detect. Leave empty to allow all public hosts. |
+| `IMAGE_DOWNLOAD_MAX_BYTES` | No | `10485760` | Maximum image download size in bytes (10MB). |
+| `IMAGE_DOWNLOAD_MAX_REDIRECTS` | No | `3` | Maximum HTTP redirect chain length. |
+| `IMAGE_DOWNLOAD_TIMEOUT_SECONDS` | No | `20` | HTTP download timeout in seconds. |
+| `WARMUP_PREDICTOR_ON_STARTUP` | No | `true` | Load TF model at startup. Set false for fast dev iteration. |
+| `EMAIL_BACKEND` | No | `console` | Email delivery: `console` or `smtp`. |
+| `SMTP_HOST` | No | | SMTP server hostname. |
+| `SMTP_PORT` | No | `587` | SMTP server port. |
+| `SMTP_USER` | No | | SMTP authentication username. |
+| `SMTP_PASSWORD` | No | | SMTP authentication password. |
+| `EMAIL_FROM` | No | `noreply@foodqcheck.local` | Sender email address. |
+| `PASSWORD_RESET_TOKEN_TTL_MINUTES` | No | `15` | Password reset token TTL. |
+| `RESET_PASSWORD_FRONTEND_URL` | No | `http://localhost:5173/reset-password` | Frontend password reset page URL. |
+| `EMAIL_VERIFICATION_TOKEN_TTL_MINUTES` | No | `30` | Email verification token TTL. |
+| `VERIFY_EMAIL_FRONTEND_URL` | No | `http://localhost:5173/verify-email` | Frontend email verification page URL. |
+| `REQUIRE_VERIFIED_EMAIL` | No | `false` | Enforce email verification before login. |
 
 ## Value Rules
 
 ### `APP_ENV`
 
-Nilai yang dipakai di fase awal:
-
-- `development`
-- `production`
+Values: `development`, `test`, `production`.
 
 ### `DATABASE_URL`
 
-Rules:
-
-- wajib memakai connection string penuh
-- jangan simpan credential database produksi di repo
-- untuk local development, pakai user database khusus project
+- Must use full connection string.
+- Never commit production credentials.
+- For local development, use project-specific database user.
 
 ### `SECRET_KEY`
 
-Rules:
-
-- wajib diganti dari placeholder sebelum auth aktif dipakai
-- jangan gunakan string pendek atau gampang ditebak
-- jangan dicetak ke log atau response API
-
-### `ACCESS_TOKEN_EXPIRE_MINUTES`
-
-Rules:
-
-- gunakan angka bulat positif
-- untuk local baseline, nilai `60` dianggap aman
+- Must be changed from placeholder before auth is active.
+- Use a long, random string.
+- Never print to logs or API responses.
 
 ### `MODEL_PATH`
 
-Rules:
+- Must point to a valid model artifact.
+- Current active model: `umkm_food_quality_v1`.
 
-- harus menunjuk ke artefak model final yang valid
-- backend tidak boleh menebak nama model secara hardcoded di banyak tempat
+### `ALLOWED_IMAGE_DOMAINS`
 
-### `CLASS_INDICES_PATH`
-
-Rules:
-
-- harus selalu satu paket dengan model yang aktif
-- jika model diganti, file ini juga harus ikut diperbarui
-
-### `CORS_ORIGINS`
-
-Rules:
-
-- isi dipisah dengan koma
-- untuk development cukup isi origin lokal yang benar-benar dipakai
-- jangan membuka origin terlalu lebar di production tanpa alasan jelas
+- Comma-separated hostnames.
+- Leave empty to allow any public host (private/loopback IPs always rejected).
+- Set to `res.cloudinary.com` for production.
 
 ## Secret Handling Policy
 
-Aturan secret untuk project ini:
+1. `.env` is for local runtime only and must never enter Git.
+2. `.env.example` contains safe placeholders only.
+3. Secrets like `SECRET_KEY` and database credentials must never be written in source code.
+4. Application logs must never print secrets or full connection strings.
+5. At deploy time, secrets must be injected via platform environment settings.
 
-1. File `.env` hanya untuk local runtime dan tidak boleh masuk Git.
-2. File `.env.example` hanya berisi placeholder aman, bukan nilai rahasia nyata.
-3. Secret seperti `SECRET_KEY` dan credential database tidak boleh ditulis di source code.
-4. Log aplikasi tidak boleh mencetak isi secret atau connection string lengkap.
-5. Saat deploy, secret harus diisi lewat environment setting platform deployment, bukan dengan commit file `.env`.
-
-## Baseline Local Workflow
-
-Urutan pakai untuk local setup:
+## Local Setup
 
 ```bash
 cp .env.example .env
 ```
 
-Lalu edit `.env` dan sesuaikan minimal:
+Edit `.env` and set at minimum:
 
 - `DATABASE_URL`
 - `SECRET_KEY`
 - `MODEL_PATH`
 - `CLASS_INDICES_PATH`
 
-Untuk environment backend dan ML, runtime baseline yang dipakai project ini adalah Python `3.11`.
+Python 3.11 is the required runtime for both backend and ML environments.
 
 ## Change Policy
 
-Jika ada env var baru di fase berikutnya:
+When adding a new env var:
 
-1. tambahkan dulu ke `.env.example`
-2. dokumentasikan di file ini
-3. baru dipakai di kode backend atau script ML
+1. Add to `.env.example` first
+2. Document in this file
+3. Then use in backend or ML code

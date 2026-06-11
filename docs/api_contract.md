@@ -1,6 +1,6 @@
 # API Contract
 
-Dokumen ini menjadi kontrak dasar endpoint backend untuk fase awal integrasi model publik.
+Backend API contract for UMKM Food Quality detection service.
 
 ## Endpoint Groups
 
@@ -9,17 +9,33 @@ Dokumen ini menjadi kontrak dasar endpoint backend untuk fase awal integrasi mod
 - `POST /auth/register`
 - `POST /auth/login`
 - `GET /auth/me`
+- `PATCH /auth/me`
+- `POST /auth/change-password`
+- `POST /auth/forgot-password`
+- `POST /auth/reset-password`
+- `DELETE /auth/me`
+- `POST /auth/verify-email`
+- `POST /auth/resend-verification`
 
 ### Detection
 
 - `POST /detect`
+
+### History
+
 - `GET /history`
+- `GET /history/latest`
 - `GET /history/{detection_id}`
+- `DELETE /history/{detection_id}`
+- `DELETE /history` (bulk)
 
 ### Admin
 
 - `GET /admin/dashboard`
+- `GET /admin/models`
 - `GET /admin/detections`
+- `GET /admin/detections/{detection_id}`
+- `POST /admin/detect/compare`
 
 ### Health
 
@@ -27,7 +43,7 @@ Dokumen ini menjadi kontrak dasar endpoint backend untuk fase awal integrasi mod
 
 ## Response Envelope Rule
 
-Fase awal backend akan memakai response JSON langsung per endpoint, tanpa wrapper envelope global tambahan. Alasannya supaya kontrak inferensi dan auth tetap sederhana lebih dulu.
+Backend returns plain JSON per endpoint, no global wrapper envelope. Keeps inference and auth contracts simple.
 
 ## Auth Contracts
 
@@ -43,13 +59,14 @@ Request body:
 }
 ```
 
-Success response:
+Success response (201):
 
 ```json
 {
   "id": 1,
   "name": "string",
   "email": "string",
+  "email_verified_at": null,
   "role": "user",
   "created_at": "2026-05-11T12:00:00Z"
 }
@@ -78,6 +95,8 @@ Success response:
 
 ### `GET /auth/me`
 
+Requires Bearer token.
+
 Success response:
 
 ```json
@@ -85,16 +104,85 @@ Success response:
   "id": 1,
   "name": "string",
   "email": "string",
+  "email_verified_at": "2026-05-11T12:00:00Z",
   "role": "user",
   "created_at": "2026-05-11T12:00:00Z"
 }
 ```
 
+### `PATCH /auth/me`
+
+Requires Bearer token. Request body:
+
+```json
+{
+  "name": "string",
+  "email": "string",
+  "current_password": "string"
+}
+```
+
+### `POST /auth/change-password`
+
+Requires Bearer token. Request body:
+
+```json
+{
+  "current_password": "string",
+  "new_password": "string"
+}
+```
+
+### `POST /auth/forgot-password`
+
+Request body:
+
+```json
+{
+  "email": "string"
+}
+```
+
+### `POST /auth/reset-password`
+
+Request body:
+
+```json
+{
+  "token": "string",
+  "new_password": "string"
+}
+```
+
+### `DELETE /auth/me`
+
+Requires Bearer token. Request body:
+
+```json
+{
+  "current_password": "string"
+}
+```
+
+### `POST /auth/verify-email`
+
+Request body:
+
+```json
+{
+  "token": "string"
+}
+```
+
+### `POST /auth/resend-verification`
+
+Requires Bearer token. No body required.
+
 ## Detection Contracts
 
 ### `POST /detect`
 
-Request body:
+Requires Bearer token. Request body:
 
 ```json
 {
@@ -102,7 +190,7 @@ Request body:
 }
 ```
 
-Success response:
+Success response (201):
 
 ```json
 {
@@ -111,17 +199,19 @@ Success response:
   "label_key": "tidak_layak_jual",
   "confidence_score": 91.2,
   "raw_score": 0.912,
-  "threshold_used": 0.4,
-  "model_version": "exp_005_combined_public_baseline",
+  "threshold_used": 0.1,
+  "model_version": "umkm_food_quality_v1",
   "explanation": "string",
   "image_url": "https://example.com/image.jpg",
   "created_at": "2026-05-11T12:00:00Z"
 }
 ```
 
+## History Contracts
+
 ### `GET /history`
 
-Success response:
+Requires Bearer token.
 
 ```json
 {
@@ -138,43 +228,76 @@ Success response:
 }
 ```
 
+### `GET /history/latest`
+
+Requires Bearer token. Returns single `HistoryDetailResponse` or 404.
+
 ### `GET /history/{detection_id}`
 
-Success response:
+Requires Bearer token. Returns single `HistoryDetailResponse` or 404.
+
+### `DELETE /history/{detection_id}`
+
+Requires Bearer token.
 
 ```json
-{
-  "id": 1,
-  "label": "Layak Jual",
-  "label_key": "layak_jual",
-  "confidence_score": 73.4,
-  "raw_score": 0.266,
-  "threshold_used": 0.4,
-  "model_version": "exp_005_combined_public_baseline",
-  "explanation": "string",
-  "image_url": "https://example.com/image.jpg",
-  "created_at": "2026-05-11T12:00:00Z"
-}
+{ "deleted_count": 1 }
+```
+
+### `DELETE /history` (bulk)
+
+Requires Bearer token. Request body:
+
+```json
+{ "ids": [1, 2, 3] }
+```
+
+```json
+{ "deleted_count": 2 }
 ```
 
 ## Admin Contracts
 
 ### `GET /admin/dashboard`
 
-Success response:
+Requires admin role.
 
 ```json
 {
   "total_detections": 100,
   "total_layak_jual": 45,
   "total_tidak_layak_jual": 55,
-  "active_model_version": "exp_005_combined_public_baseline"
+  "active_model_version": "umkm_food_quality_v1"
+}
+```
+
+### `GET /admin/models`
+
+Requires admin role.
+
+```json
+{
+  "active_model_id": "umkm_food_quality_v1",
+  "models": [
+    {
+      "experiment_id": "umkm_food_quality_v1",
+      "model_family": "MobileNetV2",
+      "threshold": 0.1,
+      "status": "trained",
+      "is_active": true,
+      "model_file_available": true,
+      "class_indices_file_available": true,
+      "passed_quality_gate": true,
+      "collapse_flags": [],
+      "quality_sample_count": 72
+    }
+  ]
 }
 ```
 
 ### `GET /admin/detections`
 
-Success response:
+Requires admin role.
 
 ```json
 {
@@ -185,7 +308,7 @@ Success response:
       "label": "Layak Jual",
       "label_key": "layak_jual",
       "confidence_score": 73.4,
-      "model_version": "exp_005_combined_public_baseline",
+      "model_version": "umkm_food_quality_v1",
       "created_at": "2026-05-11T12:00:00Z"
     }
   ]
@@ -194,7 +317,7 @@ Success response:
 
 ### `GET /admin/detections/{detection_id}`
 
-Success response:
+Requires admin role.
 
 ```json
 {
@@ -205,11 +328,11 @@ Success response:
   "confidence_score": 78.98,
   "raw_score": 0.634354,
   "threshold_used": 0.1,
-  "model_version": "exp_005_combined_public_baseline",
+  "model_version": "umkm_food_quality_v1",
   "explanation": "string",
   "image_url": "https://example.com/image.jpg",
   "created_at": "2026-05-11T12:00:00Z",
-  "active_model_id": "exp_005_combined_public_baseline",
+  "active_model_id": "umkm_food_quality_v1",
   "prediction_mode": "single_active_model",
   "class_indices": {
     "layak_jual": 0,
@@ -218,49 +341,17 @@ Success response:
 }
 ```
 
-### `GET /admin/models`
-
-Success response:
-
-```json
-{
-  "active_model_id": "exp_005_combined_public_baseline",
-  "models": [
-    {
-      "experiment_id": "exp_005_combined_public_baseline",
-      "model_family": "MobileNetV2",
-      "threshold": 0.1,
-      "status": "trained",
-      "is_active": true,
-      "model_file_available": true,
-      "class_indices_file_available": true,
-      "passed_quality_gate": true,
-      "collapse_flags": [],
-      "quality_sample_count": 500
-    }
-  ]
-}
-```
-
 ### `POST /admin/detect/compare`
 
-Request body:
+Requires admin role. Gated by `ENABLE_MULTI_MODEL_COMPARISON=true`.
 
 ```json
 {
-  "image_url": "https://example.com/image.jpg"
-}
-```
-
-Success response:
-
-```json
-{
-  "active_model_id": "exp_005_combined_public_baseline",
+  "active_model_id": "umkm_food_quality_v1",
   "image_url": "https://example.com/image.jpg",
   "predictions": [
     {
-      "model_version": "exp_005_combined_public_baseline",
+      "model_version": "umkm_food_quality_v1",
       "label": "Tidak Layak Jual",
       "label_key": "tidak_layak_jual",
       "confidence_score": 78.98,
@@ -279,13 +370,26 @@ Success response:
 
 ### `GET /health`
 
-Success response:
-
 ```json
 {
   "status": "ok",
-  "database": "unknown",
-  "model_loaded": false,
-  "model_version": "unknown"
+  "database": "connected",
+  "model_loaded": true,
+  "model_version": "umkm_food_quality_v1"
 }
 ```
+
+## Rate Limits
+
+| Endpoint | Limit |
+|---|---|
+| `POST /auth/register` | 5/min |
+| `POST /auth/login` | 5/min |
+| `POST /detect` | 30/min |
+| `POST /auth/forgot-password` | 3/min |
+| `POST /auth/change-password` | 5/min |
+| `PATCH /auth/me` | 5/min |
+| `DELETE /auth/me` | 5/min |
+| `POST /auth/verify-email` | 5/min |
+| `POST /auth/resend-verification` | 3/min |
+| Default | 100/min |
