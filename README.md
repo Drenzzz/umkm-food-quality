@@ -87,9 +87,27 @@ Variable yang sudah disiapkan untuk fase awal:
 - `MODEL_PATH`
 - `CLASS_INDICES_PATH`
 - `CORS_ORIGINS`
+- `REQUIRE_VERIFIED_EMAIL` — set `true` untuk production agar user wajib verifikasi email
+- `EMAIL_BACKEND` — `console` (dev) atau `smtp` (production)
+- `SMTP_*` — konfigurasi SMTP untuk pengiriman email
+- `VERIFY_EMAIL_FRONTEND_URL` — URL deep link verifikasi email
+- `RESET_PASSWORD_FRONTEND_URL` — URL deep link reset password
 
 Referensi detail arti tiap variable dan aturan secret ada di `docs/environment_variables.md`.
 
 ## Repository Boundary
 
 Aturan file yang boleh masuk repo dan yang harus tetap lokal didokumentasikan di `docs/repo_strategy.md`.
+
+## Auth & Security
+
+Backend menggunakan JWT (HS256) untuk autentikasi. Fitur autentikasi meliputi:
+
+- Register, login, verifikasi email, lupa password, reset password, hapus akun
+- Password policy: minimal 8 karakter, harus ada huruf besar, kecil, dan angka
+- Email di-normalize ke lowercase sebelum disimpan
+- JWT memiliki `iss` dan `aud` claims
+- `REQUIRE_VERIFIED_EMAIL=true` memblokir login jika email belum diverifikasi
+- Rate limiting di semua endpoint auth
+
+Email verifikasi dan reset password menggunakan deep link scheme `foodqcheck://` untuk development, atau `https://` scheme untuk production dengan Android App Links.

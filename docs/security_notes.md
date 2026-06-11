@@ -1,10 +1,10 @@
 # Security Notes
 
-Dokumen ini menjadi catatan keamanan dasar untuk backend fase awal.
+Dokumen ini menjadi catatan keamanan untuk backend.
 
 ## Middleware Order
 
-Urutan middleware konseptual yang dipakai untuk fase backend ini:
+Urutan middleware konseptual yang dipakai:
 
 1. `CORS`
 2. `Auth`
@@ -12,19 +12,48 @@ Urutan middleware konseptual yang dipakai untuk fase backend ini:
 4. `RateLimit`
 5. `Handler`
 
-Implementasi middleware penuh akan menyusul di step backend berikutnya, tetapi urutan ini menjadi sumber kebenaran desain.
-
 ## Auth Rules
 
 - Gunakan JWT bearer token untuk endpoint yang membutuhkan identitas user.
+- JWT sekarang memiliki `iss` (issuer) dan `aud` (audience) claims untuk mencegah token replay antar service.
 - `GET /auth/me` wajib memakai token valid.
 - Endpoint admin wajib memakai role check eksplisit.
+- Token invalidated otomatis saat user ganti password (via `last_password_change_at` check di `get_current_user`).
+
+## Email Verification
+
+- `REQUIRE_VERIFIED_EMAIL` saat ini aktif di-enforce: login ditolak jika email belum diverifikasi dan setting `true`.
+- Saat user ganti email via `PATCH /auth/me`, `email_verified_at` di-reset ke `NULL` dan email verifikasi baru dikirim.
+- Saat user hapus akun, semua record `EmailVerification` yang terkait juga dihapus.
+
+## Password Policy
+
+Semua endpoint yang menerima password (`register`, `change-password`, `reset-password`) men-validasi:
+
+- Minimal 8 karakter, maksimal 128 karakter
+- Harus ada huruf besar (`A-Z`)
+- Harus ada huruf kecil (`a-z`)
+- Harus ada angka (`0-9`)
 
 ## Input Validation Rules
 
 - Request auth harus divalidasi dengan schema Pydantic.
 - Request detect wajib memvalidasi `image_url` sebagai URL yang valid.
 - Error input harus dikembalikan tanpa menampilkan detail internal backend.
+- Field `name` di-sanitize (strip HTML tags) sebelum disimpan.
+- Field `email` di-normalize ke lowercase sebelum disimpan dan dibandingkan.
+
+## JWT Security
+
+- Token di-sign dengan HS256 menggunakan `SECRET_KEY`.
+- Payload berisi: `sub` (user ID), `iat` (issued at), `exp` (expiry), `iss` (issuer), `aud` (audience).
+- `iss` dan `aud` di-validate saat decode — token dari service lain atau issuer berbeda akan ditolak.
+
+## CORS
+
+- CORS origins ditentukan sepenuhnya dari env var `CORS_ORIGINS`.
+- Tidak ada hardcoded localhost defaults — semua origin harus di-configure secara eksplisit.
+- Production: set `CORS_ORIGINS` ke domain yang diizinkan saja.
 
 ## Detect Endpoint Rules
 

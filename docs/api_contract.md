@@ -59,6 +59,11 @@ Request body:
 }
 ```
 
+Validation rules:
+- `name`: 2-100 characters. HTML tags are stripped automatically.
+- `email`: valid email format. Normalized to lowercase before storage.
+- `password`: 8-128 characters. Must contain at least one uppercase letter, one lowercase letter, and one digit.
+
 Success response (201):
 
 ```json
@@ -89,9 +94,12 @@ Success response:
 {
   "access_token": "string",
   "token_type": "bearer",
-  "expires_in_minutes": 60
+  "expires_in_minutes": 60,
+  "email_verified_at": "2026-05-11T12:00:00Z"
 }
 ```
+
+`email_verified_at` is `null` if the user has not verified their email yet.
 
 ### `GET /auth/me`
 
@@ -133,6 +141,8 @@ Requires Bearer token. Request body:
 }
 ```
 
+`new_password` follows the same complexity rules as `register`: 8-128 characters, must contain uppercase, lowercase, and digit. All existing tokens are invalidated after password change.
+
 ### `POST /auth/forgot-password`
 
 Request body:
@@ -142,6 +152,8 @@ Request body:
   "email": "string"
 }
 ```
+
+Returns a generic message regardless of whether the email exists (prevents email enumeration). Email link uses `foodqcheck://` scheme for deep linking to the mobile app. Use `https://` scheme for production with App Links.
 
 ### `POST /auth/reset-password`
 
@@ -153,6 +165,8 @@ Request body:
   "new_password": "string"
 }
 ```
+
+`new_password` follows the same complexity rules as `register`. Token is single-use and expires after `PASSWORD_RESET_TOKEN_TTL_MINUTES`.
 
 ### `DELETE /auth/me`
 

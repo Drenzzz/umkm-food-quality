@@ -56,6 +56,15 @@ Manifest model aktif:
 - `IMAGE_DOWNLOAD_MAX_REDIRECTS`
 - `IMAGE_DOWNLOAD_TIMEOUT_SECONDS`
 - `WARMUP_PREDICTOR_ON_STARTUP`
+- `EMAIL_BACKEND`
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_PASSWORD`
+- `EMAIL_FROM`
+- `VERIFY_EMAIL_FRONTEND_URL`
+- `RESET_PASSWORD_FRONTEND_URL`
+- `REQUIRE_VERIFIED_EMAIL`
 
 ## Deployment Checklist
 
@@ -68,7 +77,12 @@ Manifest model aktif:
 7. Set `MODEL_QUALITY_STRICT=true` jika runtime harus gagal saat model aktif tidak lolos quality gate
 8. Set `ALLOWED_IMAGE_DOMAINS=res.cloudinary.com` untuk membatasi sumber gambar ke Cloudinary saja
 9. Set `APP_ENV=production` agar warmup aktif dan CORS tidak merge dengan localhost defaults
-10. Pastikan auth endpoint dan detect endpoint lolos smoke test
+10. Set `REQUIRE_VERIFIED_EMAIL=true` agar user harus verifikasi email sebelum login
+11. Set `EMAIL_BACKEND=smtp` dan konfigurasi `SMTP_*` variables untuk pengiriman email verifikasi dan reset password
+12. Set `VERIFY_EMAIL_FRONTEND_URL` dan `RESET_PASSWORD_FRONTEND_URL` ke URL yang benar:
+    - Development (Android emulator): `foodqcheck://verify-email` / `foodqcheck://reset-password`
+    - Production: `https://foodqcheck.drenzzz.dev/verify-email` / `https://foodqcheck.drenzzz.dev/reset-password`
+13. Pastikan auth endpoint dan detect endpoint lolos smoke test
 
 ## Fallback Rule
 

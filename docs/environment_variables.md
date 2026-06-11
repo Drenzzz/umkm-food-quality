@@ -30,10 +30,10 @@ Reference for all backend and ML environment variables.
 | `SMTP_PASSWORD` | No | | SMTP authentication password. |
 | `EMAIL_FROM` | No | `noreply@foodqcheck.local` | Sender email address. |
 | `PASSWORD_RESET_TOKEN_TTL_MINUTES` | No | `15` | Password reset token TTL. |
-| `RESET_PASSWORD_FRONTEND_URL` | No | `http://localhost:5173/reset-password` | Frontend password reset page URL. |
+| `RESET_PASSWORD_FRONTEND_URL` | No | `foodqcheck://reset-password` | Frontend password reset page URL. Use `https://` for production with App Links. |
 | `EMAIL_VERIFICATION_TOKEN_TTL_MINUTES` | No | `30` | Email verification token TTL. |
-| `VERIFY_EMAIL_FRONTEND_URL` | No | `http://localhost:5173/verify-email` | Frontend email verification page URL. |
-| `REQUIRE_VERIFIED_EMAIL` | No | `false` | Enforce email verification before login. |
+| `VERIFY_EMAIL_FRONTEND_URL` | No | `foodqcheck://verify-email` | Frontend email verification page URL. Use `https://` for production with App Links. |
+| `REQUIRE_VERIFIED_EMAIL` | No | `true` | Enforce email verification before login. Recommended `true` for production. |
 
 ## Value Rules
 
@@ -53,6 +53,11 @@ Values: `development`, `test`, `production`.
 - Use a long, random string.
 - Never print to logs or API responses.
 
+### `REQUIRE_VERIFIED_EMAIL`
+
+- Set to `true` for production to block unverified users from logging in.
+- When `false`, users can log in without verifying their email but a verification banner is shown in the app.
+
 ### `MODEL_PATH`
 
 - Must point to a valid model artifact.
@@ -63,6 +68,31 @@ Values: `development`, `test`, `production`.
 - Comma-separated hostnames.
 - Leave empty to allow any public host (private/loopback IPs always rejected).
 - Set to `res.cloudinary.com` for production.
+
+### `VERIFY_EMAIL_FRONTEND_URL` / `RESET_PASSWORD_FRONTEND_URL`
+
+- Use `foodqcheck://` custom URL scheme for local development with Android emulator.
+- Use `https://` scheme for production with Android App Links.
+- Example production: `https://foodqcheck.drenzzz.dev/verify-email`
+
+## Auth Validation Rules
+
+### Password Policy
+
+All auth endpoints that accept a password (`register`, `change-password`, `reset-password`) enforce:
+
+- Minimum 8 characters, maximum 128 characters
+- At least one uppercase letter (`A-Z`)
+- At least one lowercase letter (`a-z`)
+- At least one digit (`0-9`)
+
+### Email Normalization
+
+All auth endpoints that accept an email (`register`, `login`, `forgot-password`, `update-profile`) normalize the email to lowercase before storage and comparison. `Test@Example.com` and `test@example.com` are treated as the same address.
+
+### Name Sanitization
+
+The `name` field in `register` and `update-profile` strips HTML tags before storage. `<b>Bold</b> User` becomes `Bold User`.
 
 ## Secret Handling Policy
 
