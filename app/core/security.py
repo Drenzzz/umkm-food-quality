@@ -27,7 +27,13 @@ def create_access_token(subject: str) -> str:
     settings = get_settings()
     issued_at = datetime.now(UTC)
     expire_at = issued_at + timedelta(minutes=settings.access_token_expire_minutes)
-    payload = {"sub": subject, "iat": issued_at, "exp": expire_at}
+    payload = {
+        "sub": subject,
+        "iat": issued_at,
+        "exp": expire_at,
+        "iss": "umkm-food-quality-api",
+        "aud": "umkm-food-quality-client",
+    }
     return jwt.encode(payload, settings.secret_key, algorithm="HS256")
 
 
@@ -49,7 +55,13 @@ def get_current_user(
     )
 
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+        payload = jwt.decode(
+            token,
+            settings.secret_key,
+            algorithms=["HS256"],
+            issuer="umkm-food-quality-api",
+            audience="umkm-food-quality-client",
+        )
         subject = payload.get("sub")
         issued_at = payload.get("iat")
         if subject is None:

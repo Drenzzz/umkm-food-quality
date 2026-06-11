@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 _PASSWORD_COMPLEXITY_RE = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$")
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
 
 
 def _validate_password_complexity(value: str) -> str:
@@ -17,12 +18,21 @@ def _normalize_email(value: EmailStr) -> str:
     return str(value).lower().strip()
 
 
+def _sanitize_name(value: str) -> str:
+    return _HTML_TAG_RE.sub("", value).strip()
+
+
 class RegisterRequest(BaseModel):
     name: str = Field(min_length=2, max_length=100)
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
 
     _normalize_email = field_validator("email", mode="before")(_normalize_email)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        return _sanitize_name(v)
 
     @field_validator("password")
     @classmethod
@@ -43,6 +53,11 @@ class UpdateProfileRequest(BaseModel):
     current_password: str = Field(min_length=8, max_length=128)
 
     _normalize_email = field_validator("email", mode="before")(_normalize_email)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        return _sanitize_name(v)
 
 
 class ChangePasswordRequest(BaseModel):
