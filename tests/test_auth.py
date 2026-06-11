@@ -649,3 +649,161 @@ def test_resend_verification_succeeds_even_if_email_delivery_fails() -> None:
                     db.scalars(select(EmailVerification).where(EmailVerification.user_id == register_response.json()["id"]))
                 )
                 assert len(verifications) == 1
+
+
+def test_register_rejects_weak_password_without_uppercase() -> None:
+    with TestClient(app) as client:
+        response = client.post(
+            "/auth/register",
+            json={
+                "name": "Weak Password User",
+                "email": "weak-pw@example.com",
+                "password": "lowercase1",
+            },
+        )
+        assert response.status_code == 422
+
+
+def test_register_rejects_weak_password_without_digit() -> None:
+    with TestClient(app) as client:
+        response = client.post(
+            "/auth/register",
+            json={
+                "name": "No Digit User",
+                "email": "no-digit@example.com",
+                "password": "NoDigitPass",
+            },
+        )
+        assert response.status_code == 422
+
+
+def test_register_rejects_weak_password_without_lowercase() -> None:
+    with TestClient(app) as client:
+        response = client.post(
+            "/auth/register",
+            json={
+                "name": "No Lower User",
+                "email": "no-lower@example.com",
+                "password": "NOLOWER1",
+            },
+        )
+        assert response.status_code == 422
+
+
+def test_register_normalizes_email_to_lowercase() -> None:
+    with TestClient(app) as client:
+        response = client.post(
+            "/auth/register",
+            json={
+                "name": "Email Norm User",
+                "email": "NORM@EXAMPLE.COM",
+                "password": "Password123",
+            },
+        )
+        assert response.status_code == 201
+        assert response.json()["email"] == "norm@example.com"
+
+
+def test_login_returns_email_verified_at() -> None:
+    with TestClient(app) as client:
+        client.post(
+            "/auth/register",
+            json={
+                "name": "Token Verify User",
+                "email": "token-verify@example.com",
+                "password": "Password123",
+            },
+        )
+        response = client.post(
+            "/auth/login",
+            json={
+                "email": "token-verify@example.com",
+                "password": "Password123",
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["email_verified_at"] is None
+
+
+def test_update_profile_resets_email_verified_at_on_email_change() -> None:
+    with TestClient(app) as client:
+        client.post(
+            "/auth/register",
+            json={
+                "name": "Profile Reset Verify",
+                "email": "reset-verify@example.com",
+                "password": "Password123",
+            },
+        )
+        login_response = client.post(
+            "/auth/login",
+            json={
+                "email": "reset-verify@example.com",
+                "password": "Password123",
+            },
+        )
+        token = login_response.json()["access_token"]
+
+        with SessionLocal() as db:
+            user = db.scalar(select(User).where(User.email == "reset-verify@example.com"))
+            assert user is not None
+            user.email_verified_at = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+            db.commit()
+
+        update_response = client.patch(
+            "/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "name": "Profile Reset Verify",
+                "email": "new-email-verify@example.com",
+                "current_password": "Password123",
+            },
+        )
+        assert update_response.status_code == 200
+        assert update_response.json()["email_verified_at"] is None
+
+
+def test_name_strips_html_tags() -> None:
+    with TestClient(app) as client:
+        response = client.post(
+            "/auth/register",
+            json={
+                "name": "<b>Bold</b> User",
+                "email": "sanitize@example.com",
+                "password": "Password123",
+            },
+        )
+        assert response.status_code == 201
+        assert response.json()["name"] == "Bold User"
+
+
+def test_login_blocked_when_verification_required_and_not_verified() -> None:
+    import app.core.config as config_mod
+
+    original_value = config_mod.get_settings()
+
+    class FakeSettings:
+        def __getattr__(self, name: str):
+            if name == "require_verified_email":
+                return True
+            return getattr(original_value, name)
+
+    with patch("app.services.auth_service.get_settings", return_value=FakeSettings()):
+        with TestClient(app) as client:
+            client.post(
+                "/auth/register",
+                json={
+                    "name": "Blocked Verify User",
+                    "email": "blocked-verify@example.com",
+                    "password": "Password123",
+                },
+            )
+            response = client.post(
+                "/auth/login",
+                json={
+                    "email": "blocked-verify@example.com",
+                    "password": "Password123",
+                },
+            )
+            assert response.status_code == 401
+            assert response.json()["detail"] == "Invalid email or password"

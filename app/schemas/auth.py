@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 _PASSWORD_COMPLEXITY_RE = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$")
-_HTML_TAG_RE = re.compile(r"<[^>]+>")
+_HTML_TAG_RE = re.compile(r"<[^>]*>")
 
 
 def _validate_password_complexity(value: str) -> str:
