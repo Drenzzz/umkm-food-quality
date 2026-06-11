@@ -22,7 +22,9 @@ from app.ml.predictor import _validate_image_url_or_raise  # noqa: E402
 
 @pytest.fixture(autouse=True)
 def _reset_settings_cache():
+    get_settings.cache_clear()
     yield
+    get_settings.cache_clear()
 
 
 def _patch_dns(addresses: list[str]):
@@ -62,6 +64,7 @@ def test_validator_accepts_public_host_when_no_whitelist() -> None:
 
 def test_validator_enforces_domain_whitelist(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ALLOWED_IMAGE_DOMAINS", "res.cloudinary.com")
+    get_settings.cache_clear()
 
     with _patch_dns(["104.16.132.229"]):
         with pytest.raises(ValueError, match="allowed domain list"):
@@ -70,6 +73,7 @@ def test_validator_enforces_domain_whitelist(monkeypatch: pytest.MonkeyPatch) ->
 
 def test_validator_accepts_subdomain_of_whitelisted_root(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ALLOWED_IMAGE_DOMAINS", "cloudinary.com")
+    get_settings.cache_clear()
 
     with _patch_dns(["104.16.132.229"]):
         _validate_image_url_or_raise("https://res.cloudinary.com/demo/image.jpg")

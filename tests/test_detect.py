@@ -29,6 +29,8 @@ if TEST_DB_PATH.exists():
 from app.core.config import get_settings  # noqa: E402
 from app.main import app  # noqa: E402
 
+get_settings.cache_clear()
+
 FIXTURE_IMAGE = Path("tests/fixtures/sample_keripik.jpg").read_bytes()
 MOCK_IMAGE_URL = "https://mock.example.com/sample.jpg"
 
