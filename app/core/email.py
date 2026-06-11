@@ -27,11 +27,19 @@ class SMTPEmailSender(EmailSender):
         message["Subject"] = subject
         message.set_content(body)
 
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as smtp:
-            smtp.starttls()
-            if settings.smtp_user:
-                smtp.login(settings.smtp_user, settings.smtp_password)
-            smtp.send_message(message)
+        try:
+            with smtplib.SMTP(
+                settings.smtp_host,
+                settings.smtp_port,
+                timeout=10,
+            ) as smtp:
+                smtp.starttls()
+                if settings.smtp_user:
+                    smtp.login(settings.smtp_user, settings.smtp_password)
+                smtp.send_message(message)
+        except (smtplib.SMTPException, OSError) as exc:
+            logger.exception("SMTP delivery failed for recipient=%s", recipient)
+            raise RuntimeError(f"Email delivery failed: {exc}") from exc
 
 
 def get_email_sender() -> EmailSender:
