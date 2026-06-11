@@ -16,9 +16,9 @@ os.environ["CLASS_INDICES_PATH"] = "ml/model/umkm_food_quality_v1/class_indices.
 os.environ["CORS_ORIGINS"] = "http://localhost:3000"
 os.environ["EMAIL_BACKEND"] = "console"
 os.environ["PASSWORD_RESET_TOKEN_TTL_MINUTES"] = "15"
-os.environ["RESET_PASSWORD_FRONTEND_URL"] = "http://localhost:5173/reset-password"
+os.environ["RESET_PASSWORD_FRONTEND_URL"] = "foodqcheck://reset-password"
 os.environ["EMAIL_VERIFICATION_TOKEN_TTL_MINUTES"] = "30"
-os.environ["VERIFY_EMAIL_FRONTEND_URL"] = "http://localhost:5173/verify-email"
+os.environ["VERIFY_EMAIL_FRONTEND_URL"] = "foodqcheck://verify-email"
 os.environ["REQUIRE_VERIFIED_EMAIL"] = "false"
 
 if TEST_DB_PATH.exists():

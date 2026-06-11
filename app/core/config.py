@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -32,9 +30,9 @@ class Settings(BaseSettings):
     smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
     email_from: str = Field(default="noreply@foodqcheck.local", alias="EMAIL_FROM")
     password_reset_token_ttl_minutes: int = Field(default=15, alias="PASSWORD_RESET_TOKEN_TTL_MINUTES")
-    reset_password_frontend_url: str = Field(default="http://localhost:5173/reset-password", alias="RESET_PASSWORD_FRONTEND_URL")
+    reset_password_frontend_url: str = Field(default="foodqcheck://reset-password", alias="RESET_PASSWORD_FRONTEND_URL")
     email_verification_token_ttl_minutes: int = Field(default=30, alias="EMAIL_VERIFICATION_TOKEN_TTL_MINUTES")
-    verify_email_frontend_url: str = Field(default="http://localhost:5173/verify-email", alias="VERIFY_EMAIL_FRONTEND_URL")
+    verify_email_frontend_url: str = Field(default="foodqcheck://verify-email", alias="VERIFY_EMAIL_FRONTEND_URL")
     require_verified_email: bool = Field(default=False, alias="REQUIRE_VERIFIED_EMAIL")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
@@ -50,6 +48,5 @@ class Settings(BaseSettings):
         return [domain.strip().lower() for domain in self.allowed_image_domains.split(",") if domain.strip()]
 
 
-@lru_cache
 def get_settings() -> Settings:
     return Settings()
