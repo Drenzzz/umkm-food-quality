@@ -1,6 +1,8 @@
 # Deployment Notes
 
-Dokumen ini menjadi catatan deploy backend fase awal.
+Deployment scripts and full step-by-step instructions live in
+[`deploy/README.md`](../deploy/README.md). This file documents the
+runtime contract and required environment variables.
 
 ## Current Scope
 
@@ -19,17 +21,26 @@ Manifest model aktif:
 ### API
 
 - FastAPI app dijalankan dari `app.main:app`
+- Production: Gunicorn + Uvicorn workers (2 workers) di belakang Nginx reverse proxy
 
 ### Database
 
-- PostgreSQL lokal untuk development
-- PostgreSQL managed service untuk demo online
+- PostgreSQL 14 untuk baremetal
+- PostgreSQL 15 untuk Docker compose
+- Managed PostgreSQL service direkomendasikan untuk demo online
 
 ### Model Artifacts
 
-- model dibaca dari direktori `ml/model/<experiment>/`
-- backend harus tahu `MODEL_PATH` dan `CLASS_INDICES_PATH`
-- pilihan model aktif sementara harus sinkron dengan `ml/model/active_model.json`
+- Model dibaca dari direktori `ml/model/<experiment>/`
+- Backend harus tahu `MODEL_PATH` dan `CLASS_INDICES_PATH`
+- Pilihan model aktif sementara harus sinkron dengan `ml/model/active_model.json`
+- Model artifacts (.keras) di-gitignore karena ukurannya besar — di-upload manual via `deploy/copy-model.sh` (scp)
+
+## Web SPA
+
+- Frontend di-build dari project `umkm-food-quality-mobile` lewat `scripts/build-web.sh`
+- Static bundle di-serve oleh Nginx di `/opt/foodqcheck/web/`
+- `/api/*` di-strip prefix-nya lalu di-proxy ke backend
 
 ## Local Run Command
 
@@ -51,6 +62,7 @@ Manifest model aktif:
 - `MODEL_QUALITY_STRICT`
 - `ENABLE_MULTI_MODEL_COMPARISON`
 - `CORS_ORIGINS`
+- `ALLOWED_HOSTS` — comma-separated hostnames yang diizinkan oleh `TrustedHostMiddleware`
 - `ALLOWED_IMAGE_DOMAINS`
 - `IMAGE_DOWNLOAD_MAX_BYTES`
 - `IMAGE_DOWNLOAD_MAX_REDIRECTS`
@@ -82,7 +94,21 @@ Manifest model aktif:
 12. Set `VERIFY_EMAIL_FRONTEND_URL` dan `RESET_PASSWORD_FRONTEND_URL` ke URL yang benar:
     - Development (Android emulator): `foodqcheck://verify-email` / `foodqcheck://reset-password`
     - Production: `https://foodqcheck.drenzzz.dev/verify-email` / `https://foodqcheck.drenzzz.dev/reset-password`
-13. Pastikan auth endpoint dan detect endpoint lolos smoke test
+13. Set `ALLOWED_HOSTS` ke hostname production (mis. `foodqcheck.drenzzz.dev,localhost,127.0.0.1`)
+14. Pastikan auth endpoint dan detect endpoint lolos smoke test
+15. Verifikasi `/.well-known/assetlinks.json` bisa diakses via HTTPS untuk Android App Links
+
+## Production Hardening
+
+- OpenAPI docs (`/docs`, `/redoc`, `/openapi.json`) otomatis di-disable saat `APP_ENV=production`
+- CORS dibatasi ke specific methods (`GET, POST, PATCH, DELETE`) dan headers (`Authorization, Content-Type`)
+- `TrustedHostMiddleware` memvalidasi Host header terhadap `ALLOWED_HOSTS`
+- Security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy) dipasang di Nginx
+- JWT divalidasi dengan `iss` dan `aud` claims
+- Password complexity: minimal 8 karakter, harus ada huruf besar, kecil, dan angka
+- DB connection pool: `pool_size=5, max_overflow=0` untuk konservatif di 4GB VPS
+- fail2ban aktif untuk SSH protection
+- UFW aktif: hanya port 22 (SSH) dan 80 (Nginx) yang dibuka
 
 ## Fallback Rule
 
