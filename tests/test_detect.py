@@ -66,14 +66,14 @@ def test_detect_endpoint_returns_detection_payload(mock_image_download) -> None:
             json={
                 "name": "Detector User",
                 "email": "detector@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert register_response.status_code == 201
 
         login_response = client.post(
             "/auth/login",
-            json={"email": "detector@example.com", "password": "password123"},
+            json={"email": "detector@example.com", "password": "Password123"},
         )
         token = login_response.json()["access_token"]
 

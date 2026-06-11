@@ -75,7 +75,7 @@ def test_history_admin_and_health_flow(mock_image_download) -> None:
         for email, name in [("user@example.com", "Normal User"), ("admin@example.com", "Admin User")]:
             register_response = client.post(
                 "/auth/register",
-                json={"name": name, "email": email, "password": "password123"},
+                json={"name": name, "email": email, "password": "Password123"},
             )
             assert register_response.status_code == 201
 
@@ -83,12 +83,12 @@ def test_history_admin_and_health_flow(mock_image_download) -> None:
 
         user_token = client.post(
             "/auth/login",
-            json={"email": "user@example.com", "password": "password123"},
+            json={"email": "user@example.com", "password": "Password123"},
         ).json()["access_token"]
 
         admin_token = client.post(
             "/auth/login",
-            json={"email": "admin@example.com", "password": "password123"},
+            json={"email": "admin@example.com", "password": "Password123"},
         ).json()["access_token"]
 
         detect_response = client.post(
@@ -129,24 +129,24 @@ def test_history_delete_single_and_bulk_respects_user_scope() -> None:
     with TestClient(app) as client:
         first_register = client.post(
             "/auth/register",
-            json={"name": "History User One", "email": "history-one@example.com", "password": "password123"},
+            json={"name": "History User One", "email": "history-one@example.com", "password": "Password123"},
         )
         assert first_register.status_code == 201
 
         second_register = client.post(
             "/auth/register",
-            json={"name": "History User Two", "email": "history-two@example.com", "password": "password123"},
+            json={"name": "History User Two", "email": "history-two@example.com", "password": "Password123"},
         )
         assert second_register.status_code == 201
 
         first_token = client.post(
             "/auth/login",
-            json={"email": "history-one@example.com", "password": "password123"},
+            json={"email": "history-one@example.com", "password": "Password123"},
         ).json()["access_token"]
 
         second_token = client.post(
             "/auth/login",
-            json={"email": "history-two@example.com", "password": "password123"},
+            json={"email": "history-two@example.com", "password": "Password123"},
         ).json()["access_token"]
 
         with SessionLocal() as db:
