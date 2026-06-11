@@ -1,0 +1,68 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-foodqcheck}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      POSTGRES_DB: ${DB_NAME:-umkm_food_quality}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-foodqcheck}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: ./env.production
+        required: true
+    environment:
+      DATABASE_URL: postgresql+psycopg://${DB_USER:-foodqcheck}:${DB_PASSWORD}@db:5432/${DB_NAME:-umkm_food_quality}
+      APP_ENV: production
+      WARMUP_PREDICTOR_ON_STARTUP: "true"
+    volumes:
+      - model_data:/app/ml/model/umkm_food_quality_v1
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.docker.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../web:/opt/foodqcheck/web:ro
+      - ../ml/model/umkm_food_quality_v1/assetlinks.json:/var/www/foodqcheck/.well-known/assetlinks.json:ro
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+volumes:
+  postgres_data:
+  model_data:
