@@ -81,18 +81,18 @@ class ResendEmailSender(EmailSender):
         )
 
         try:
-            with urllib.request.urlopen(request, timeout=10) as response:
-                if response.status >= 400:
-                    body_text = response.read().decode("utf-8", errors="replace")
-                    logger.error(
-                        "Resend API error status=%d body=%s",
-                        response.status,
-                        body_text,
-                    )
-                    raise RuntimeError(
-                        f"Resend API returned status {response.status}: {body_text}"
-                    )
-        except (urllib.error.URLError, urllib.error.HTTPError) as exc:
+            urllib.request.urlopen(request, timeout=10)
+        except urllib.error.HTTPError as exc:
+            body_text = exc.read().decode("utf-8", errors="replace")
+            logger.error(
+                "Resend API error status=%d body=%s",
+                exc.code,
+                body_text,
+            )
+            raise RuntimeError(
+                f"Email delivery failed: HTTP {exc.code} {body_text}"
+            ) from exc
+        except urllib.error.URLError as exc:
             logger.exception("Resend delivery failed for recipient=%s", recipient)
             raise RuntimeError(f"Email delivery failed: {exc}") from exc
 
