@@ -225,6 +225,50 @@ docker compose -f deploy/docker-compose.yml restart api
    intent filter for `foodqcheck.drenzzz.dev` (see the
    `docs/security_notes.md` for the exact config).
 
+## Build the Android APK
+
+The mobile app is the primary target for the capstone demo. Build the
+APK from the `umkm-food-quality-mobile` project on your local machine.
+
+### Quick debug build (recommended for demo)
+
+```bash
+cd ../umkm-food-quality-mobile
+./scripts/build-apk.sh debug
+```
+
+Output: `android/app/build/outputs/apk/debug/app-debug.apk` (~9 MB)
+
+Install to a connected device or emulator:
+```bash
+adb install android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+The debug APK points to `https://foodqcheck.drenzzz.dev/api` so it works
+against the live backend once Cloudflare DNS resolves and the VPS is up.
+
+### Signed release build (for distribution)
+
+Generate a release keystore once:
+```bash
+keytool -genkey -v -keystore release.keystore -alias foodqcheck \
+    -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Build a signed APK (you'll be prompted for the keystore + key passwords):
+```bash
+./scripts/build-apk.sh release release.keystore foodqcheck
+```
+
+Output: `android/app/build/outputs/apk/release/app-release.apk`
+
+### Smoke test checklist after install
+
+- App launches → login screen
+- Register with a real email → check Gmail → click verification link
+- After verification → login → home screen → tap "Mulai Deteksi" → upload image
+- Reset password flow → check Gmail → use link → new password works
+
 ## Rollback Strategy
 
 | Change | Rollback |
