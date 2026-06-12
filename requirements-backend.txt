@@ -16,3 +16,4 @@ python-multipart
 httpx
 slowapi
 respx
+gunicorn
