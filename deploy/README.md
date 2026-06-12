@@ -289,7 +289,9 @@ sudo -u postgres pg_dump umkm_food_quality > /opt/foodqcheck/backups/pre-deploy-
 
 - **502 Bad Gateway** — backend not running. `sudo systemctl status foodqcheck`
 - **Database connection refused** — wrong `DATABASE_URL` or PostgreSQL down. `sudo systemctl status postgresql`
-- **Emails not sending** — check `SMTP_*` env vars and Gmail App Password. Test with `curl -X POST http://localhost:8000/auth/forgot-password` (logged email will appear in `/var/log/foodqcheck/`)
+- **Emails not sending** — most VPS providers (DigitalOcean, Vultr, Linode) block outbound SMTP (25/465/587). Check `EMAIL_BACKEND=resend` and a valid `RESEND_API_KEY`; the API uses port 443 which is always open. For SMTP fallback, verify `SMTP_*` env vars and Gmail App Password. Test with `curl -X POST http://localhost:8000/auth/forgot-password` (logged email will appear in `/var/log/foodqcheck/` for `EMAIL_BACKEND=console`, or check the Resend dashboard at https://resend.com/emails for the API).
+- **Resend 403 "domain not verified"** — sender address must be on a verified domain at https://resend.com/domains, or use the test sender `onboarding@resend.dev` (which can only send to the Resend account owner email).
+- **Resend 403 "only send testing emails to your own email"** — `onboarding@resend.dev` test sender is limited to the Resend account owner. Verify a custom domain or use a different sender.
 - **Web app 404 on refresh** — ensure `try_files $uri $uri/ /index.html` is in the nginx `/` location block
 - **`assetlinks.json` not found** — confirm the file is at `/var/www/foodqcheck/.well-known/assetlinks.json` (baremetal) or the Docker volume mount
 - **Token expired in Deep Link** — bump `EMAIL_VERIFICATION_TOKEN_TTL_MINUTES` in `.env` for demo/development

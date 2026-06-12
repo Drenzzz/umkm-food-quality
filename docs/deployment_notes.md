@@ -90,7 +90,9 @@ Manifest model aktif:
 8. Set `ALLOWED_IMAGE_DOMAINS=res.cloudinary.com` untuk membatasi sumber gambar ke Cloudinary saja
 9. Set `APP_ENV=production` agar warmup aktif dan CORS tidak merge dengan localhost defaults
 10. Set `REQUIRE_VERIFIED_EMAIL=true` agar user harus verifikasi email sebelum login
-11. Set `EMAIL_BACKEND=smtp` dan konfigurasi `SMTP_*` variables untuk pengiriman email verifikasi dan reset password
+11. Set `EMAIL_BACKEND=resend` (recommended) atau `smtp` (kalau VPS allow SMTP):
+    - **Resend**: Daftar di https://resend.com, buat API key, set `RESEND_API_KEY`. Sender harus domain yang sudah diverifikasi di Resend, atau pakai `onboarding@resend.dev` untuk testing (hanya bisa kirim ke email owner akun Resend). Port HTTPS 443, jadi work di semua VPS provider yang block SMTP.
+    - **SMTP/Gmail**: Set `SMTP_*` variables. Perlu Gmail App Password. **TIDAK akan work di VPS yang block port 25/465/587** (e.g. DigitalOcean).
 12. Set `VERIFY_EMAIL_FRONTEND_URL` dan `RESET_PASSWORD_FRONTEND_URL` ke URL yang benar:
     - Development (Android emulator): `foodqcheck://verify-email` / `foodqcheck://reset-password`
     - Production: `https://foodqcheck.drenzzz.dev/verify-email` / `https://foodqcheck.drenzzz.dev/reset-password`
