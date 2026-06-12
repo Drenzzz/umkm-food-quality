@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     smtp_user: str = Field(default="", alias="SMTP_USER")
     smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
     email_from: str = Field(default="noreply@foodqcheck.local", alias="EMAIL_FROM")
+    resend_api_key: str = Field(default="", alias="RESEND_API_KEY")
     password_reset_token_ttl_minutes: int = Field(default=15, alias="PASSWORD_RESET_TOKEN_TTL_MINUTES")
     reset_password_frontend_url: str = Field(default="foodqcheck://reset-password", alias="RESET_PASSWORD_FRONTEND_URL")
     email_verification_token_ttl_minutes: int = Field(default=30, alias="EMAIL_VERIFICATION_TOKEN_TTL_MINUTES")

@@ -27,6 +27,7 @@ if TEST_DB_PATH.exists():
 
 from sqlalchemy import select  # noqa: E402
 
+from app.core.config import get_settings  # noqa: E402
 from app.core.password_reset_token import hash_password_reset_token  # noqa: E402
 from app.db.models import Detection, EmailVerification, PasswordReset, User  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
@@ -650,6 +651,46 @@ def test_resend_verification_succeeds_even_if_email_delivery_fails() -> None:
                     db.scalars(select(EmailVerification).where(EmailVerification.user_id == register_response.json()["id"]))
                 )
                 assert len(verifications) == 1
+
+
+def test_register_uses_resend_backend_when_configured() -> None:
+    with patch.dict(os.environ, {"EMAIL_BACKEND": "resend", "RESEND_API_KEY": "re_test_key"}):
+        get_settings.cache_clear()
+        with patch("app.core.email.urllib.request.urlopen") as mocked_urlopen:
+            mocked_response = mocked_urlopen.return_value.__enter__.return_value
+            mocked_response.status = 200
+            mocked_response.read.return_value = b'{"id": "abc"}'
+
+            with TestClient(app) as client:
+                response = client.post(
+                    "/auth/register",
+                    json={
+                        "name": "Resend User",
+                        "email": "resend-user@example.com",
+                        "password": "Password123",
+                    },
+                )
+                assert response.status_code == 201
+                mocked_urlopen.assert_called_once()
+                request_obj = mocked_urlopen.call_args.args[0]
+                assert "api.resend.com" in request_obj.full_url
+
+
+def test_resend_backend_fails_when_api_key_missing() -> None:
+    with patch.dict(os.environ, {"EMAIL_BACKEND": "resend", "RESEND_API_KEY": ""}):
+        get_settings.cache_clear()
+        with TestClient(app) as client:
+            response = client.post(
+                "/auth/register",
+                json={
+                    "name": "No Key User",
+                    "email": "no-key@example.com",
+                    "password": "Password123",
+                },
+            )
+            # Registration succeeds even if the verification email itself
+            # cannot be sent — consistent with the SMTP delivery-fail tests.
+            assert response.status_code == 201
 
 
 def test_register_rejects_weak_password_without_uppercase() -> None:
