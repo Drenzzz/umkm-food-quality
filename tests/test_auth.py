@@ -14,12 +14,6 @@ os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
 os.environ["MODEL_PATH"] = "ml/model/umkm_food_quality_v1/model.keras"
 os.environ["CLASS_INDICES_PATH"] = "ml/model/umkm_food_quality_v1/class_indices.json"
 os.environ["CORS_ORIGINS"] = "http://localhost:3000"
-os.environ["EMAIL_BACKEND"] = "console"
-os.environ["PASSWORD_RESET_TOKEN_TTL_MINUTES"] = "15"
-os.environ["RESET_PASSWORD_FRONTEND_URL"] = "foodqcheck://reset-password"
-os.environ["EMAIL_VERIFICATION_TOKEN_TTL_MINUTES"] = "30"
-os.environ["VERIFY_EMAIL_FRONTEND_URL"] = "foodqcheck://verify-email"
-os.environ["REQUIRE_VERIFIED_EMAIL"] = "false"
 os.environ["ALLOWED_HOSTS"] = "localhost,127.0.0.1,testserver"
 
 if TEST_DB_PATH.exists():
@@ -27,9 +21,7 @@ if TEST_DB_PATH.exists():
 
 from sqlalchemy import select  # noqa: E402
 
-from app.core.config import get_settings  # noqa: E402
-from app.core.password_reset_token import hash_password_reset_token  # noqa: E402
-from app.db.models import Detection, EmailVerification, PasswordReset, User  # noqa: E402
+from app.db.models import Detection, User  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
 from app.main import app  # noqa: E402
 
@@ -296,94 +288,6 @@ def test_change_password_rejects_wrong_current_password() -> None:
         assert change_response.json()["detail"] == "Current password is incorrect"
 
 
-def test_forgot_password_returns_generic_message_for_unknown_email() -> None:
-    with TestClient(app) as client:
-        response = client.post(
-            "/auth/forgot-password",
-            json={"email": "missing@example.com"},
-        )
-        assert response.status_code == 200
-        assert response.json()["message"] == "If the email exists, a reset link has been sent"
-
-
-def test_reset_password_accepts_valid_token_and_rejects_reuse() -> None:
-    with TestClient(app) as client:
-        register_response = client.post(
-            "/auth/register",
-            json={
-                "name": "Reset Password User",
-                "email": "reset-password@example.com",
-                "password": "Password123",
-            },
-        )
-        assert register_response.status_code == 201
-
-        forgot_response = client.post(
-            "/auth/forgot-password",
-            json={"email": "reset-password@example.com"},
-        )
-        assert forgot_response.status_code == 200
-
-        with SessionLocal() as db:
-            password_reset = db.scalar(select(PasswordReset).order_by(PasswordReset.id.desc()))
-            assert password_reset is not None
-            reset_token = password_reset.token_hash
-
-        invalid_response = client.post(
-            "/auth/reset-password",
-            json={
-                "token": reset_token,
-                "new_password": "Newpassword123",
-            },
-        )
-        assert invalid_response.status_code == 400
-
-        raw_token = "valid-reset-token-for-tests-1234567890"
-        with SessionLocal() as db:
-            password_reset = db.scalar(select(PasswordReset).order_by(PasswordReset.id.desc()))
-            assert password_reset is not None
-            password_reset.token_hash = hash_password_reset_token(raw_token)
-            db.commit()
-
-        reset_response = client.post(
-            "/auth/reset-password",
-            json={
-                "token": raw_token,
-                "new_password": "Newpassword123",
-            },
-        )
-        assert reset_response.status_code == 200
-        assert reset_response.json()["message"] == "Password has been reset successfully"
-
-        reused_response = client.post(
-            "/auth/reset-password",
-            json={
-                "token": raw_token,
-                "new_password": "Anotherpassword123",
-            },
-        )
-        assert reused_response.status_code == 400
-        assert reused_response.json()["detail"] == "Invalid or expired password reset token"
-
-        old_password_login_response = client.post(
-            "/auth/login",
-            json={
-                "email": "reset-password@example.com",
-                "password": "Password123",
-            },
-        )
-        assert old_password_login_response.status_code == 401
-
-        new_password_login_response = client.post(
-            "/auth/login",
-            json={
-                "email": "reset-password@example.com",
-                "password": "Newpassword123",
-            },
-        )
-        assert new_password_login_response.status_code == 200
-
-
 def test_delete_account_removes_user_and_related_records() -> None:
     with TestClient(app) as client:
         register_response = client.post(
@@ -405,12 +309,6 @@ def test_delete_account_removes_user_and_related_records() -> None:
         )
         assert login_response.status_code == 200
         token = login_response.json()["access_token"]
-
-        forgot_response = client.post(
-            "/auth/forgot-password",
-            json={"email": "delete-account@example.com"},
-        )
-        assert forgot_response.status_code == 200
 
         with SessionLocal() as db:
             user = db.scalar(select(User).where(User.email == "delete-account@example.com"))
@@ -454,12 +352,8 @@ def test_delete_account_removes_user_and_related_records() -> None:
             remaining_detection = db.scalar(
                 select(Detection).where(Detection.user_id == user_id)
             )
-            remaining_reset = db.scalar(
-                select(PasswordReset).where(PasswordReset.user_id == user_id)
-            )
             assert deleted_user is None
             assert remaining_detection is None
-            assert remaining_reset is None
 
 
 def test_delete_account_rejects_wrong_current_password() -> None:
@@ -492,205 +386,6 @@ def test_delete_account_rejects_wrong_current_password() -> None:
         )
         assert delete_response.status_code == 400
         assert delete_response.json()["detail"] == "Current password is incorrect"
-
-
-def test_register_sends_email_verification_and_verify_email_succeeds() -> None:
-    with TestClient(app) as client:
-        register_response = client.post(
-            "/auth/register",
-            json={
-                "name": "Verify Email User",
-                "email": "verify-email@example.com",
-                "password": "Password123",
-            },
-        )
-        assert register_response.status_code == 201
-        assert register_response.json()["email_verified_at"] is None
-
-        raw_token = "valid-email-verify-token-for-tests-1234567890"
-        with SessionLocal() as db:
-            verification = db.scalar(select(EmailVerification).order_by(EmailVerification.id.desc()))
-            assert verification is not None
-            verification.token_hash = hash_password_reset_token(raw_token)
-            db.commit()
-
-        verify_response = client.post(
-            "/auth/verify-email",
-            json={"token": raw_token},
-        )
-        assert verify_response.status_code == 200
-        assert verify_response.json()["message"] == "Email verified successfully"
-
-        with SessionLocal() as db:
-            user = db.scalar(select(User).where(User.email == "verify-email@example.com"))
-            assert user is not None
-            assert user.email_verified_at is not None
-
-
-def test_register_succeeds_even_if_verification_email_delivery_fails() -> None:
-    with patch("app.services.email_verification_service.get_email_sender") as mocked_sender_factory:
-        mocked_sender_factory.return_value.send.side_effect = RuntimeError("SMTP unavailable")
-
-        with TestClient(app) as client:
-            register_response = client.post(
-                "/auth/register",
-                json={
-                    "name": "Fallback Verify User",
-                    "email": "fallback-verify@example.com",
-                    "password": "Password123",
-                },
-            )
-            assert register_response.status_code == 201
-
-            with SessionLocal() as db:
-                user = db.scalar(select(User).where(User.email == "fallback-verify@example.com"))
-                verification = db.scalar(select(EmailVerification).where(EmailVerification.user_id == user.id))
-                assert user is not None
-                assert verification is not None
-
-
-def test_forgot_password_succeeds_even_if_email_delivery_fails() -> None:
-    with TestClient(app) as client:
-        register_response = client.post(
-            "/auth/register",
-            json={
-                "name": "Fallback Reset User",
-                "email": "fallback-reset@example.com",
-                "password": "Password123",
-            },
-        )
-        assert register_response.status_code == 201
-
-    with patch("app.services.password_reset_service.get_email_sender") as mocked_sender_factory:
-        mocked_sender_factory.return_value.send.side_effect = RuntimeError("SMTP unavailable")
-
-        with TestClient(app) as client:
-            forgot_response = client.post(
-                "/auth/forgot-password",
-                json={"email": "fallback-reset@example.com"},
-            )
-            assert forgot_response.status_code == 200
-            assert forgot_response.json()["message"] == "If the email exists, a reset link has been sent"
-
-            with SessionLocal() as db:
-                user = db.scalar(select(User).where(User.email == "fallback-reset@example.com"))
-                password_reset = db.scalar(select(PasswordReset).where(PasswordReset.user_id == user.id))
-                assert user is not None
-                assert password_reset is not None
-
-
-def test_resend_verification_creates_new_record_for_unverified_user() -> None:
-    with TestClient(app) as client:
-        register_response = client.post(
-            "/auth/register",
-            json={
-                "name": "Resend Verify User",
-                "email": "resend-verify@example.com",
-                "password": "Password123",
-            },
-        )
-        assert register_response.status_code == 201
-
-        login_response = client.post(
-            "/auth/login",
-            json={
-                "email": "resend-verify@example.com",
-                "password": "Password123",
-            },
-        )
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-        resend_response = client.post(
-            "/auth/resend-verification",
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        assert resend_response.status_code == 200
-        assert resend_response.json()["message"] == "Verification email sent successfully"
-
-        with SessionLocal() as db:
-            verifications = list(db.scalars(select(EmailVerification).where(EmailVerification.user_id == register_response.json()["id"])))
-            assert len(verifications) == 1
-
-
-def test_resend_verification_succeeds_even_if_email_delivery_fails() -> None:
-    with TestClient(app) as client:
-        register_response = client.post(
-            "/auth/register",
-            json={
-                "name": "Resend Verify Fallback User",
-                "email": "resend-verify-fallback@example.com",
-                "password": "Password123",
-            },
-        )
-        assert register_response.status_code == 201
-
-        login_response = client.post(
-            "/auth/login",
-            json={
-                "email": "resend-verify-fallback@example.com",
-                "password": "Password123",
-            },
-        )
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-    with patch("app.services.email_verification_service.get_email_sender") as mocked_sender_factory:
-        mocked_sender_factory.return_value.send.side_effect = RuntimeError("SMTP unavailable")
-
-        with TestClient(app) as client:
-            resend_response = client.post(
-                "/auth/resend-verification",
-                headers={"Authorization": f"Bearer {token}"},
-            )
-            assert resend_response.status_code == 200
-            assert resend_response.json()["message"] == "Verification email sent successfully"
-
-            with SessionLocal() as db:
-                verifications = list(
-                    db.scalars(select(EmailVerification).where(EmailVerification.user_id == register_response.json()["id"]))
-                )
-                assert len(verifications) == 1
-
-
-def test_register_uses_resend_backend_when_configured() -> None:
-    with patch.dict(os.environ, {"EMAIL_BACKEND": "resend", "RESEND_API_KEY": "re_test_key"}):
-        get_settings.cache_clear()
-        with patch("app.core.email.urllib.request.urlopen") as mocked_urlopen:
-            mocked_response = mocked_urlopen.return_value.__enter__.return_value
-            mocked_response.status = 200
-            mocked_response.read.return_value = b'{"id": "abc"}'
-
-            with TestClient(app) as client:
-                response = client.post(
-                    "/auth/register",
-                    json={
-                        "name": "Resend User",
-                        "email": "resend-user@example.com",
-                        "password": "Password123",
-                    },
-                )
-                assert response.status_code == 201
-                mocked_urlopen.assert_called_once()
-                request_obj = mocked_urlopen.call_args.args[0]
-                assert "api.resend.com" in request_obj.full_url
-
-
-def test_resend_backend_fails_when_api_key_missing() -> None:
-    with patch.dict(os.environ, {"EMAIL_BACKEND": "resend", "RESEND_API_KEY": ""}):
-        get_settings.cache_clear()
-        with TestClient(app) as client:
-            response = client.post(
-                "/auth/register",
-                json={
-                    "name": "No Key User",
-                    "email": "no-key@example.com",
-                    "password": "Password123",
-                },
-            )
-            # Registration succeeds even if the verification email itself
-            # cannot be sent — consistent with the SMTP delivery-fail tests.
-            assert response.status_code == 201
 
 
 def test_register_rejects_weak_password_without_uppercase() -> None:
@@ -746,63 +441,18 @@ def test_register_normalizes_email_to_lowercase() -> None:
         assert response.json()["email"] == "norm@example.com"
 
 
-def test_login_returns_email_verified_at() -> None:
+def test_register_auto_verifies_email() -> None:
     with TestClient(app) as client:
-        client.post(
-            "/auth/register",
-            json={
-                "name": "Token Verify User",
-                "email": "token-verify@example.com",
-                "password": "Password123",
-            },
-        )
         response = client.post(
-            "/auth/login",
-            json={
-                "email": "token-verify@example.com",
-                "password": "Password123",
-            },
-        )
-        assert response.status_code == 200
-        assert response.json()["email_verified_at"] is None
-
-
-def test_update_profile_resets_email_verified_at_on_email_change() -> None:
-    with TestClient(app) as client:
-        client.post(
             "/auth/register",
             json={
-                "name": "Profile Reset Verify",
-                "email": "reset-verify@example.com",
+                "name": "Auto Verify User",
+                "email": "auto-verify@example.com",
                 "password": "Password123",
             },
         )
-        login_response = client.post(
-            "/auth/login",
-            json={
-                "email": "reset-verify@example.com",
-                "password": "Password123",
-            },
-        )
-        token = login_response.json()["access_token"]
-
-        with SessionLocal() as db:
-            user = db.scalar(select(User).where(User.email == "reset-verify@example.com"))
-            assert user is not None
-            user.email_verified_at = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
-            db.commit()
-
-        update_response = client.patch(
-            "/auth/me",
-            headers={"Authorization": f"Bearer {token}"},
-            json={
-                "name": "Profile Reset Verify",
-                "email": "new-email-verify@example.com",
-                "current_password": "Password123",
-            },
-        )
-        assert update_response.status_code == 200
-        assert update_response.json()["email_verified_at"] is None
+        assert response.status_code == 201
+        assert response.json()["email_verified_at"] is not None
 
 
 def test_name_strips_html_tags() -> None:
@@ -817,35 +467,3 @@ def test_name_strips_html_tags() -> None:
         )
         assert response.status_code == 201
         assert response.json()["name"] == "Bold User"
-
-
-def test_login_blocked_when_verification_required_and_not_verified() -> None:
-    import app.core.config as config_mod
-
-    original_value = config_mod.get_settings()
-
-    class FakeSettings:
-        def __getattr__(self, name: str):
-            if name == "require_verified_email":
-                return True
-            return getattr(original_value, name)
-
-    with patch("app.services.auth_service.get_settings", return_value=FakeSettings()):
-        with TestClient(app) as client:
-            client.post(
-                "/auth/register",
-                json={
-                    "name": "Blocked Verify User",
-                    "email": "blocked-verify@example.com",
-                    "password": "Password123",
-                },
-            )
-            response = client.post(
-                "/auth/login",
-                json={
-                    "email": "blocked-verify@example.com",
-                    "password": "Password123",
-                },
-            )
-            assert response.status_code == 401
-            assert response.json()["detail"] == "Invalid email or password"

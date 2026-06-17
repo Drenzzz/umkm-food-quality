@@ -19,7 +19,6 @@ os.environ["MODEL_PATH"] = "ml/model/umkm_food_quality_v1/model.keras"
 os.environ["CLASS_INDICES_PATH"] = "ml/model/umkm_food_quality_v1/class_indices.json"
 os.environ["CORS_ORIGINS"] = "http://localhost:3000"
 os.environ["EMAIL_BACKEND"] = "console"
-os.environ["VERIFY_EMAIL_FRONTEND_URL"] = "http://localhost:5173/verify-email"
 os.environ["ALLOWED_IMAGE_DOMAINS"] = ""
 
 if TEST_DB_PATH.exists():
