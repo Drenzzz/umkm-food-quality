@@ -70,28 +70,8 @@ class ChangePasswordRequest(BaseModel):
         return _validate_password_complexity(v)
 
 
-class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
-
-    _normalize_email = field_validator("email", mode="before")(_normalize_email)
-
-
-class ResetPasswordRequest(BaseModel):
-    token: str = Field(min_length=20, max_length=512)
-    new_password: str = Field(min_length=8, max_length=128)
-
-    @field_validator("new_password")
-    @classmethod
-    def validate_password_complexity(cls, v: str) -> str:
-        return _validate_password_complexity(v)
-
-
 class DeleteAccountRequest(BaseModel):
     current_password: str = Field(min_length=8, max_length=128)
-
-
-class VerifyEmailRequest(BaseModel):
-    token: str = Field(min_length=20, max_length=512)
 
 
 class UserResponse(BaseModel):
