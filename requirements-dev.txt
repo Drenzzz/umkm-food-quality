@@ -1,0 +1,6 @@
+# Dev/test dependencies — not installed in production Docker image.
+
+-r requirements-backend.txt
+
+pytest==9.0.3
+respx==0.23.1

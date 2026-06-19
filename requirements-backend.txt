@@ -1,23 +1,21 @@
-fastapi
-uvicorn[standard]
-sqlalchemy
-alembic
-pytest
-psycopg[binary]
-pydantic-settings
-email-validator
-numpy
-pillow
-tensorflow
-python-jose[cryptography]
-passlib[bcrypt]
-# passlib 1.7.4 is incompatible with bcrypt 4.x — the backend probe tries
-# to detect a wrap bug by hashing a 73-byte test secret which bcrypt 4.x
-# rejects with "password cannot be longer than 72 bytes". Pin to bcrypt 3.x
-# until the project migrates away from passlib.
-bcrypt>=3.2,<4.0
-python-multipart
-httpx
-slowapi
-respx
-gunicorn
+# Backend production dependencies — pinned for reproducible builds.
+# Update with: .venv/bin/pip freeze | grep -E "^package==" > requirements-backend.txt
+
+fastapi==0.136.3
+uvicorn[standard]==0.49.0
+sqlalchemy==2.0.43
+alembic==1.18.4
+psycopg[binary]==3.3.4
+pydantic-settings==2.14.1
+email-validator==2.3.0
+numpy==2.4.6
+pillow==12.2.0
+tensorflow==2.21.0
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.7.4
+# passlib 1.7.4 is incompatible with bcrypt 4.x — pin to 3.x until migration.
+bcrypt==3.2.2
+python-multipart==0.0.32
+httpx==0.28.1
+slowapi==0.1.9
+gunicorn==23.0.0
