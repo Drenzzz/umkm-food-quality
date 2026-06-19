@@ -84,6 +84,9 @@ class AdminDetectionDetailResponse(BaseModel):
 
 class AdminDetectionListResponse(BaseModel):
     items: list[AdminDetectionItemResponse]
+    total: int
+    offset: int
+    limit: int
 
 
 class AdminModelItemResponse(BaseModel):

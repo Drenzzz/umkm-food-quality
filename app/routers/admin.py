@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
@@ -17,10 +17,13 @@ from app.schemas.admin import (
 from app.schemas.detect import DetectComparisonResponse, DetectRequest, ModelComparisonItemResponse
 from app.services.admin_service import (
     build_detection_detail_response,
+    count_all_detections,
     get_dashboard_summary,
     get_detection_detail,
     get_model_registry_metadata,
     list_all_detections,
+    DEFAULT_ADMIN_LIMIT,
+    MAX_ADMIN_LIMIT,
 )
 
 
@@ -78,9 +81,15 @@ async def compare_admin_detection_models(
 
 
 @router.get("/detections", response_model=AdminDetectionListResponse)
-def read_admin_detections(_: User = Depends(require_admin), db: Session = Depends(get_db)) -> AdminDetectionListResponse:
-    items = [AdminDetectionItemResponse.model_validate(item) for item in list_all_detections(db)]
-    return AdminDetectionListResponse(items=items)
+def read_admin_detections(
+    offset: int = Query(0, ge=0),
+    limit: int = Query(DEFAULT_ADMIN_LIMIT, ge=1, le=MAX_ADMIN_LIMIT),
+    _: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AdminDetectionListResponse:
+    total = count_all_detections(db)
+    items = [AdminDetectionItemResponse.model_validate(item) for item in list_all_detections(db, offset, limit)]
+    return AdminDetectionListResponse(items=items, total=total, offset=offset, limit=limit)
 
 
 @router.get("/detections/{detection_id}", response_model=AdminDetectionDetailResponse)
