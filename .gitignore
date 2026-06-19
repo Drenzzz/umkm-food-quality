@@ -1,11 +1,16 @@
+# Environment secrets — never commit populated .env
 .env
 .env.*
+!.env.example
+
+# Python
 venv/
 .venv-ml/
 .venv-backend/
 .venv
 __pycache__/
 *.pyc
+*.pyo
 .pytest_cache/
 
 dataset/final/
