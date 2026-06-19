@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.core.limiter import limiter
 from app.core.security import require_admin
 from app.db.models import User
 from app.db.session import get_db
@@ -31,18 +32,22 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 
 @router.get("/dashboard", response_model=AdminDashboardResponse)
-def read_admin_dashboard(_: User = Depends(require_admin), db: Session = Depends(get_db)) -> AdminDashboardResponse:
+@limiter.limit("30/minute")
+def read_admin_dashboard(request: Request, _: User = Depends(require_admin), db: Session = Depends(get_db)) -> AdminDashboardResponse:
     summary = get_dashboard_summary(db)
     return AdminDashboardResponse(**summary)
 
 
 @router.get("/models", response_model=AdminModelRegistryResponse)
-def read_admin_models(_: User = Depends(require_admin)) -> AdminModelRegistryResponse:
+@limiter.limit("30/minute")
+def read_admin_models(request: Request, _: User = Depends(require_admin)) -> AdminModelRegistryResponse:
     return get_model_registry_metadata()
 
 
 @router.post("/detect/compare", response_model=DetectComparisonResponse)
+@limiter.limit("10/minute")
 async def compare_admin_detection_models(
+    request: Request,
     payload: DetectRequest,
     _: User = Depends(require_admin),
 ) -> DetectComparisonResponse:
@@ -81,7 +86,9 @@ async def compare_admin_detection_models(
 
 
 @router.get("/detections", response_model=AdminDetectionListResponse)
+@limiter.limit("60/minute")
 def read_admin_detections(
+    request: Request,
     offset: int = Query(0, ge=0),
     limit: int = Query(DEFAULT_ADMIN_LIMIT, ge=1, le=MAX_ADMIN_LIMIT),
     _: User = Depends(require_admin),
@@ -93,7 +100,9 @@ def read_admin_detections(
 
 
 @router.get("/detections/{detection_id}", response_model=AdminDetectionDetailResponse)
+@limiter.limit("60/minute")
 def read_admin_detection_detail(
+    request: Request,
     detection_id: int,
     _: User = Depends(require_admin),
     db: Session = Depends(get_db),

@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
+from app.core.limiter import limiter
 from app.core.security import get_current_user
 from app.db.models import User
 from app.db.session import get_db
@@ -21,7 +22,9 @@ router = APIRouter(tags=["history"])
 
 
 @router.get("/history", response_model=HistoryListResponse)
+@limiter.limit("60/minute")
 def read_history(
+    request: Request,
     offset: int = Query(0, ge=0),
     limit: int = Query(DEFAULT_HISTORY_LIMIT, ge=1, le=MAX_HISTORY_LIMIT),
     current_user: User = Depends(get_current_user),
@@ -33,7 +36,9 @@ def read_history(
 
 
 @router.get("/history/latest", response_model=HistoryDetailResponse)
+@limiter.limit("60/minute")
 def read_latest_history(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> HistoryDetailResponse:
@@ -44,7 +49,9 @@ def read_latest_history(
 
 
 @router.get("/history/{detection_id}", response_model=HistoryDetailResponse)
+@limiter.limit("60/minute")
 def read_history_detail(
+    request: Request,
     detection_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -56,7 +63,9 @@ def read_history_detail(
 
 
 @router.delete("/history/{detection_id}", response_model=DeleteHistoryResponse)
+@limiter.limit("30/minute")
 def delete_history_detail(
+    request: Request,
     detection_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -68,7 +77,9 @@ def delete_history_detail(
 
 
 @router.delete("/history", response_model=DeleteHistoryResponse)
+@limiter.limit("10/minute")
 def delete_history_bulk(
+    request: Request,
     payload: BulkDeleteRequest = Body(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
