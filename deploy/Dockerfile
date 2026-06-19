@@ -5,6 +5,9 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
+RUN groupadd --gid 1000 appuser \
+    && useradd --uid 1000 --gid appuser --create-home appuser
+
 WORKDIR /app
 
 RUN apt-get update \
@@ -23,7 +26,10 @@ COPY alembic ./alembic
 COPY alembic.ini ./
 COPY ml ./ml
 COPY deploy/foodqcheck.entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh \
+    && chown -R appuser:appuser /app
+
+USER appuser
 
 EXPOSE 8000
 
