@@ -42,24 +42,22 @@ Backend harus selalu membaca `class_indices.json` dari model aktif untuk menghin
 
 ## Threshold Rule
 
-The active threshold follows the business scoring contract defined in the planning document:
+The active threshold is configured per model in `active_model.json`. The current active model uses threshold `0.3`.
 
 ```text
-raw_score < 0.5  -> layak_jual    (confidence = 1 - raw_score)
-raw_score >= 0.5 -> tidak_layak_jual (confidence = raw_score)
+raw_score < 0.3  -> layak_jual    (confidence = 1 - raw_score)
+raw_score >= 0.3 -> tidak_layak_jual (confidence = raw_score)
 ```
 
-The default threshold is `0.5`. This value must not be changed without explicit review and approval, as it directly affects the label decision boundary visible to end users.
-
-Threshold aktif harus mengikuti artefak model yang dipilih untuk backend.
+Threshold aktif harus mengikuti artefak model yang dipilih untuk backend. Jangan hardcode threshold — baca dari `active_model.json` atau manifest model.
 
 ## Active Model Rule
 
 Backend hanya boleh memakai **satu model aktif** pada satu waktu. Model aktif harus dipilih dari hasil baseline publik yang sudah dievaluasi lengkap.
 
-Model aktif sementara saat ini:
+Model aktif saat ini:
 
-- `exp_005_combined_public_baseline`
+- `umkm_food_quality_v1` (MobileNetV2, threshold 0.3)
 
 Sumber kebenaran pemilihan model aktif:
 

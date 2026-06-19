@@ -11,11 +11,7 @@ Backend API contract for UMKM Food Quality detection service.
 - `GET /auth/me`
 - `PATCH /auth/me`
 - `POST /auth/change-password`
-- `POST /auth/forgot-password`
-- `POST /auth/reset-password`
 - `DELETE /auth/me`
-- `POST /auth/verify-email`
-- `POST /auth/resend-verification`
 
 ### Detection
 
@@ -143,31 +139,6 @@ Requires Bearer token. Request body:
 
 `new_password` follows the same complexity rules as `register`: 8-128 characters, must contain uppercase, lowercase, and digit. All existing tokens are invalidated after password change.
 
-### `POST /auth/forgot-password`
-
-Request body:
-
-```json
-{
-  "email": "string"
-}
-```
-
-Returns a generic message regardless of whether the email exists (prevents email enumeration). Email link uses `foodqcheck://` scheme for deep linking to the mobile app. Use `https://` scheme for production with App Links.
-
-### `POST /auth/reset-password`
-
-Request body:
-
-```json
-{
-  "token": "string",
-  "new_password": "string"
-}
-```
-
-`new_password` follows the same complexity rules as `register`. Token is single-use and expires after `PASSWORD_RESET_TOKEN_TTL_MINUTES`.
-
 ### `DELETE /auth/me`
 
 Requires Bearer token. Request body:
@@ -177,20 +148,6 @@ Requires Bearer token. Request body:
   "current_password": "string"
 }
 ```
-
-### `POST /auth/verify-email`
-
-Request body:
-
-```json
-{
-  "token": "string"
-}
-```
-
-### `POST /auth/resend-verification`
-
-Requires Bearer token. No body required.
 
 ## Detection Contracts
 
@@ -213,7 +170,7 @@ Success response (201):
   "label_key": "tidak_layak_jual",
   "confidence_score": 91.2,
   "raw_score": 0.912,
-  "threshold_used": 0.1,
+  "threshold_used": 0.3,
   "model_version": "umkm_food_quality_v1",
   "explanation": "string",
   "image_url": "https://example.com/image.jpg",
@@ -225,7 +182,7 @@ Success response (201):
 
 ### `GET /history`
 
-Requires Bearer token.
+Requires Bearer token. Supports pagination query params: `offset` (default 0), `limit` (default 20, max 100).
 
 ```json
 {
@@ -238,7 +195,10 @@ Requires Bearer token.
       "image_url": "https://example.com/image.jpg",
       "created_at": "2026-05-11T12:00:00Z"
     }
-  ]
+  ],
+  "total": 100,
+  "offset": 0,
+  "limit": 20
 }
 ```
 
@@ -311,7 +271,7 @@ Requires admin role.
 
 ### `GET /admin/detections`
 
-Requires admin role.
+Requires admin role. Supports pagination query params: `offset` (default 0), `limit` (default 20, max 100).
 
 ```json
 {
@@ -325,7 +285,10 @@ Requires admin role.
       "model_version": "umkm_food_quality_v1",
       "created_at": "2026-05-11T12:00:00Z"
     }
-  ]
+  ],
+  "total": 100,
+  "offset": 0,
+  "limit": 20
 }
 ```
 
@@ -341,7 +304,7 @@ Requires admin role.
   "label_key": "tidak_layak_jual",
   "confidence_score": 78.98,
   "raw_score": 0.634354,
-  "threshold_used": 0.1,
+  "threshold_used": 0.3,
   "model_version": "umkm_food_quality_v1",
   "explanation": "string",
   "image_url": "https://example.com/image.jpg",
@@ -370,7 +333,7 @@ Requires admin role. Gated by `ENABLE_MULTI_MODEL_COMPARISON=true`.
       "label_key": "tidak_layak_jual",
       "confidence_score": 78.98,
       "raw_score": 0.634354,
-      "threshold_used": 0.1,
+      "threshold_used": 0.3,
       "explanation": "string",
       "is_active": true,
       "passed_quality_gate": true,
@@ -399,11 +362,17 @@ Requires admin role. Gated by `ENABLE_MULTI_MODEL_COMPARISON=true`.
 |---|---|
 | `POST /auth/register` | 5/min |
 | `POST /auth/login` | 5/min |
-| `POST /detect` | 30/min |
-| `POST /auth/forgot-password` | 3/min |
-| `POST /auth/change-password` | 5/min |
 | `PATCH /auth/me` | 5/min |
+| `POST /auth/change-password` | 5/min |
 | `DELETE /auth/me` | 5/min |
-| `POST /auth/verify-email` | 5/min |
-| `POST /auth/resend-verification` | 3/min |
+| `POST /detect` | 30/min |
+| `GET /history` | 60/min |
+| `GET /history/latest` | 60/min |
+| `GET /history/{id}` | 60/min |
+| `DELETE /history/{id}` | 30/min |
+| `DELETE /history` (bulk) | 10/min |
+| `GET /admin/dashboard` | 30/min |
+| `GET /admin/detections` | 60/min |
+| `GET /admin/models` | 30/min |
+| `POST /admin/detect/compare` | 10/min |
 | Default | 100/min |
