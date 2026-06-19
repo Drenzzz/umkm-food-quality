@@ -1,3 +1,17 @@
+# =============================================================================
+# Docker Compose for production deployment.
+# =============================================================================
+# Backup PostgreSQL:
+#   docker compose exec db pg_dump -U foodqcheck umkm_food_quality > backup.sql
+#
+# Restore PostgreSQL:
+#   docker compose exec db psql -U foodqcheck umkm_food_quality < backup.sql
+#
+# View logs:
+#   docker compose logs -f api
+#   docker compose logs -f db
+# =============================================================================
+
 services:
   db:
     image: postgres:15-alpine

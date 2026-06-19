@@ -15,6 +15,14 @@ if [[ ! -f ".env" ]]; then
   exit 1
 fi
 
+echo "==========================================="
+echo "  Before deploying, ensure you have:"
+echo "  1. Backed up the PostgreSQL database:"
+echo "     sudo -u postgres pg_dump umkm_food_quality > backup_$(date +%Y%m%d_%H%M%S).sql"
+echo "  2. Verified recent model files are in ml/model/"
+echo "==========================================="
+echo ""
+
 echo "=== 1/7 Pull latest source from ${BRANCH}"
 sudo -u "${APP_USER}" git fetch --all --prune
 sudo -u "${APP_USER}" git reset --hard "origin/${BRANCH}"
