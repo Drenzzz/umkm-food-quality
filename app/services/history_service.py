@@ -1,11 +1,25 @@
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.db.models import Detection, User
 
+DEFAULT_HISTORY_LIMIT = 20
+MAX_HISTORY_LIMIT = 100
 
-def list_user_history(db: Session, user: User) -> list[Detection]:
-    statement = select(Detection).where(Detection.user_id == user.id).order_by(Detection.created_at.desc())
+
+def count_user_history(db: Session, user: User) -> int:
+    statement = select(func.count()).select_from(Detection).where(Detection.user_id == user.id)
+    return int(db.scalar(statement) or 0)
+
+
+def list_user_history(db: Session, user: User, offset: int = 0, limit: int = DEFAULT_HISTORY_LIMIT) -> list[Detection]:
+    statement = (
+        select(Detection)
+        .where(Detection.user_id == user.id)
+        .order_by(Detection.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+    )
     return list(db.scalars(statement))
 
 

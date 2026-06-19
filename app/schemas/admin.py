@@ -31,6 +31,9 @@ class HistoryDetailResponse(BaseModel):
 
 class HistoryListResponse(BaseModel):
     items: list[HistoryItemResponse]
+    total: int
+    offset: int
+    limit: int
 
 
 class BulkDeleteRequest(BaseModel):
