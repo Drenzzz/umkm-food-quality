@@ -7,8 +7,8 @@ Reference for all backend and ML environment variables.
 | Variable | Required | Example | Purpose |
 |---|---|---|---|
 | `APP_ENV` | Yes | `development` | Runtime context: development, test, or production. |
-| `DATABASE_URL` | Yes | `postgresql://postgres:change_me@localhost:5432/umkm_food_quality` | PostgreSQL connection string. |
-| `SECRET_KEY` | Yes | `change-this-secret-key` | JWT signing key and security purposes. |
+| `DATABASE_URL` | Yes | `postgresql://user:pass@localhost:5432/umkm_food_quality` | PostgreSQL connection string. |
+| `SECRET_KEY` | Yes | *generate with `python -c "import secrets; print(secrets.token_urlsafe(48))"`* | JWT signing key. Must be random and secret. |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Yes | `60` | Access token TTL in minutes. |
 | `MODEL_PATH` | Yes | `ml/model/umkm_food_quality_v1/model.keras` | Active model inference path. |
 | `CLASS_INDICES_PATH` | Yes | `ml/model/umkm_food_quality_v1/class_indices.json` | Label index mapping for active model. |
@@ -17,29 +17,30 @@ Reference for all backend and ML environment variables.
 | `MODEL_QUALITY_REPORT_PATH` | No | `ml/model/model_quality_report.json` | Quality gate report for model validation. |
 | `MODEL_QUALITY_STRICT` | No | `false` | Fail startup if active model fails quality gate. |
 | `ENABLE_MULTI_MODEL_COMPARISON` | No | `false` | Enable admin multi-model comparison endpoint. |
-| `CORS_ORIGINS` | Yes | `http://localhost:3000,http://localhost:5173` | Comma-separated allowed CORS origins. |
+| `CORS_ORIGINS` | Yes | `http://localhost:5173` | Comma-separated allowed CORS origins. |
+| `ALLOWED_HOSTS` | No | `localhost,127.0.0.1` | Comma-separated hostnames for TrustedHostMiddleware. |
 | `ALLOWED_IMAGE_DOMAINS` | No | `res.cloudinary.com` | Comma-separated allowed image hostnames for /detect. Leave empty to allow all public hosts. |
 | `IMAGE_DOWNLOAD_MAX_BYTES` | No | `10485760` | Maximum image download size in bytes (10MB). |
 | `IMAGE_DOWNLOAD_MAX_REDIRECTS` | No | `3` | Maximum HTTP redirect chain length. |
 | `IMAGE_DOWNLOAD_TIMEOUT_SECONDS` | No | `20` | HTTP download timeout in seconds. |
 | `WARMUP_PREDICTOR_ON_STARTUP` | No | `true` | Load TF model at startup. Set false for fast dev iteration. |
-| `EMAIL_BACKEND` | No | `console` | Email delivery: `console` or `smtp`. |
+| `EMAIL_BACKEND` | No | `console` | Email delivery: `console`, `smtp`, or `resend`. |
+| `RESEND_API_KEY` | No | | Resend API key (recommended for VPS). |
 | `SMTP_HOST` | No | | SMTP server hostname. |
 | `SMTP_PORT` | No | `587` | SMTP server port. |
 | `SMTP_USER` | No | | SMTP authentication username. |
 | `SMTP_PASSWORD` | No | | SMTP authentication password. |
 | `EMAIL_FROM` | No | `noreply@foodqcheck.local` | Sender email address. |
-| `PASSWORD_RESET_TOKEN_TTL_MINUTES` | No | `15` | Password reset token TTL. |
-| `RESET_PASSWORD_FRONTEND_URL` | No | `foodqcheck://reset-password` | Frontend password reset page URL. Use `https://` for production with App Links. |
-| `EMAIL_VERIFICATION_TOKEN_TTL_MINUTES` | No | `30` | Email verification token TTL. |
-| `VERIFY_EMAIL_FRONTEND_URL` | No | `foodqcheck://verify-email` | Frontend email verification page URL. Use `https://` for production with App Links. |
-| `REQUIRE_VERIFIED_EMAIL` | No | `true` | Enforce email verification before login. Recommended `true` for production. |
 
 ## Value Rules
 
 ### `APP_ENV`
 
 Values: `development`, `test`, `production`.
+
+- `development`: SQLite auto-create tables, debug docs enabled, verbose errors.
+- `test`: SQLite in-memory, rate limiting disabled.
+- `production`: PostgreSQL, no docs endpoint, minimal error detail.
 
 ### `DATABASE_URL`
 
@@ -50,18 +51,13 @@ Values: `development`, `test`, `production`.
 ### `SECRET_KEY`
 
 - Must be changed from placeholder before auth is active.
-- Use a long, random string.
+- Generate with: `python -c "import secrets; print(secrets.token_urlsafe(48))"`
 - Never print to logs or API responses.
-
-### `REQUIRE_VERIFIED_EMAIL`
-
-- Set to `true` for production to block unverified users from logging in.
-- When `false`, users can log in without verifying their email but a verification banner is shown in the app.
 
 ### `MODEL_PATH`
 
 - Must point to a valid model artifact.
-- Current active model: `umkm_food_quality_v1`.
+- Current active model: `umkm_food_quality_v1` (MobileNetV2, threshold 0.3).
 
 ### `ALLOWED_IMAGE_DOMAINS`
 
@@ -69,17 +65,17 @@ Values: `development`, `test`, `production`.
 - Leave empty to allow any public host (private/loopback IPs always rejected).
 - Set to `res.cloudinary.com` for production.
 
-### `VERIFY_EMAIL_FRONTEND_URL` / `RESET_PASSWORD_FRONTEND_URL`
+### `EMAIL_BACKEND`
 
-- Use `foodqcheck://` custom URL scheme for local development with Android emulator.
-- Use `https://` scheme for production with Android App Links.
-- Example production: `https://foodqcheck.drenzzz.dev/verify-email`
+- `console`: Log emails to stdout (development).
+- `smtp`: Send via SMTP server (requires `SMTP_*` variables).
+- `resend`: Send via Resend HTTPS API (recommended for VPS — works on port 443).
 
 ## Auth Validation Rules
 
 ### Password Policy
 
-All auth endpoints that accept a password (`register`, `change-password`, `reset-password`) enforce:
+All auth endpoints that accept a password (`register`, `change-password`) enforce:
 
 - Minimum 8 characters, maximum 128 characters
 - At least one uppercase letter (`A-Z`)
@@ -88,7 +84,7 @@ All auth endpoints that accept a password (`register`, `change-password`, `reset
 
 ### Email Normalization
 
-All auth endpoints that accept an email (`register`, `login`, `forgot-password`, `update-profile`) normalize the email to lowercase before storage and comparison. `Test@Example.com` and `test@example.com` are treated as the same address.
+All auth endpoints that accept an email (`register`, `login`, `update-profile`) normalize the email to lowercase before storage and comparison. `Test@Example.com` and `test@example.com` are treated as the same address.
 
 ### Name Sanitization
 

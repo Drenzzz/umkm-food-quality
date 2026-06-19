@@ -1,6 +1,8 @@
 # UMKM Food Quality
 
-Struktur awal project ini difokuskan untuk dua domain utama:
+Sistem deteksi kualitas visual produk makanan kering UMKM berbasis MobileNetV2 + FastAPI.
+
+Struktur project ini difokuskan untuk dua domain utama:
 
 - `ml/` untuk pipeline dataset, training, evaluasi, dan artefak model
 - `app/` untuk backend API berbasis Python
@@ -11,22 +13,22 @@ Struktur ini sengaja dipisah dari mobile agar pengembangan backend dan machine l
 
 ```text
 umkm-food-quality/
-├── app/
-├── dataset/
-├── docs/
-├── ml/
-├── scripts/
-└── tests/
+├── app/                 # FastAPI backend (API, auth, ML inference)
+├── dataset/             # Dataset (not committed)
+├── deploy/              # Docker, Nginx, deployment scripts
+├── docs/                # Technical documentation
+├── ml/                  # ML pipeline (train, evaluate, artifacts)
+├── scripts/             # Utility scripts
+└── tests/               # Automated tests
 ```
 
 ## Environment Strategy
 
-Project ini memakai dua dependency set yang dipisah dari awal:
+Project ini memakai tiga dependency set:
 
 - `requirements-ml.txt` untuk preprocessing, training, evaluasi, dan eksperimen notebook
-- `requirements-backend.txt` untuk FastAPI, database, auth, dan model serving
-
-Pemisahan ini dipakai supaya dependency training tidak mengganggu dependency backend, dan sebaliknya.
+- `requirements-backend.txt` untuk FastAPI, database, auth, dan model serving (production, pinned versions)
+- `requirements-dev.txt` untuk testing dependencies (pytest, respx)
 
 ## Local Setup
 
@@ -34,11 +36,7 @@ Disarankan memakai dua virtual environment terpisah.
 
 ### Python Compatibility
 
-- Backend environment dan ML environment sama-sama diselaraskan ke Python `3.11`.
-- ML environment untuk TensorFlow harus memakai Python yang didukung wheel resmi.
-- Baseline runtime yang dipakai project ini adalah Python `3.11`.
-
-Jika interpreter aktif masih Python `3.14`, jangan pakai interpreter itu untuk environment backend atau ML karena stack TensorFlow backend inference di project ini mengikuti runtime `3.11`.
+Baseline runtime yang dipakai project ini adalah Python `3.11`.
 
 ### ML Environment
 
@@ -50,25 +48,26 @@ python -m pip install -r requirements-ml.txt
 
 ### ML GPU Runtime Check
 
-Jika environment ML ingin memakai GPU NVIDIA, jalankan interpreter lewat wrapper project ini supaya `LD_LIBRARY_PATH` otomatis memuat runtime libraries dari package TensorFlow GPU.
-
 ```bash
 ./scripts/run_ml_python.sh -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
-```
-
-Target output minimal:
-
-```text
-[PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')]
 ```
 
 ### Backend Environment
 
 ```bash
-python3.11 -m venv .venv-backend
-source .venv-backend/bin/activate
-python -m pip install -r requirements-backend.txt
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-backend.txt
+pip install -r requirements-dev.txt
 ```
+
+### Run Backend
+
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Health check: `http://localhost:8000/health`
 
 ## Environment Variables
 
@@ -78,22 +77,13 @@ Salin file contoh environment lebih dulu:
 cp .env.example .env
 ```
 
-Variable yang sudah disiapkan untuk fase awal:
+Referensi detail arti tiap variable dan aturan secret ada di `.env.example` dan `docs/environment_variables.md`.
 
-- `APP_ENV`
-- `DATABASE_URL`
-- `SECRET_KEY`
-- `ACCESS_TOKEN_EXPIRE_MINUTES`
-- `MODEL_PATH`
-- `CLASS_INDICES_PATH`
-- `CORS_ORIGINS`
-- `REQUIRE_VERIFIED_EMAIL` — set `true` untuk production agar user wajib verifikasi email
-- `EMAIL_BACKEND` — `console` (dev) atau `smtp` (production)
-- `SMTP_*` — konfigurasi SMTP untuk pengiriman email
-- `VERIFY_EMAIL_FRONTEND_URL` — URL deep link verifikasi email
-- `RESET_PASSWORD_FRONTEND_URL` — URL deep link reset password
+Generate secret key:
 
-Referensi detail arti tiap variable dan aturan secret ada di `docs/environment_variables.md`.
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
 
 ## Repository Boundary
 
@@ -103,11 +93,30 @@ Aturan file yang boleh masuk repo dan yang harus tetap lokal didokumentasikan di
 
 Backend menggunakan JWT (HS256) untuk autentikasi. Fitur autentikasi meliputi:
 
-- Register, login, verifikasi email, lupa password, reset password, hapus akun
+- Register, login, update profile, ganti password, hapus akun
 - Password policy: minimal 8 karakter, harus ada huruf besar, kecil, dan angka
 - Email di-normalize ke lowercase sebelum disimpan
 - JWT memiliki `iss` dan `aud` claims
-- `REQUIRE_VERIFIED_EMAIL=true` memblokir login jika email belum diverifikasi
-- Rate limiting di semua endpoint auth
+- Token invalidated otomatis saat user ganti password
+- Rate limiting di semua endpoint
+- SSRF protection di endpoint `/detect`
+- Docker container berjalan sebagai non-root user
 
-Email verifikasi dan reset password menggunakan deep link scheme `foodqcheck://` untuk development, atau `https://` scheme untuk production dengan Android App Links.
+## API Endpoints
+
+| Group | Endpoints | Auth |
+|---|---|---|
+| Health | `GET /health` | No |
+| Auth | `POST /auth/register`, `POST /auth/login`, `GET/PATCH /auth/me`, `POST /auth/change-password`, `DELETE /auth/me` | Yes |
+| Detect | `POST /detect` | Yes |
+| History | `GET /history`, `GET /history/latest`, `GET /history/{id}`, `DELETE /history/{id}`, `DELETE /history` | Yes |
+| Admin | `GET /admin/dashboard`, `GET /admin/detections`, `GET /admin/models`, `POST /admin/detect/compare` | Admin |
+
+## Deployment
+
+Deployment ke VPS menggunakan Docker Compose. Lihat `deploy/` untuk:
+
+- `Dockerfile` — multi-stage build, non-root user
+- `docker-compose.yml` — db, api, nginx
+- `deploy.sh` — automated deployment script
+- `nginx.conf` / `nginx.docker.conf` — reverse proxy config

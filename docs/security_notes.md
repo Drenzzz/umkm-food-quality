@@ -20,15 +20,9 @@ Urutan middleware konseptual yang dipakai:
 - Endpoint admin wajib memakai role check eksplisit.
 - Token invalidated otomatis saat user ganti password (via `last_password_change_at` check di `get_current_user`).
 
-## Email Verification
-
-- `REQUIRE_VERIFIED_EMAIL` saat ini aktif di-enforce: login ditolak jika email belum diverifikasi dan setting `true`.
-- Saat user ganti email via `PATCH /auth/me`, `email_verified_at` di-reset ke `NULL` dan email verifikasi baru dikirim.
-- Saat user hapus akun, semua record `EmailVerification` yang terkait juga dihapus.
-
 ## Password Policy
 
-Semua endpoint yang menerima password (`register`, `change-password`, `reset-password`) men-validasi:
+Semua endpoint yang menerima password (`register`, `change-password`) men-validasi:
 
 - Minimal 8 karakter, maksimal 128 karakter
 - Harus ada huruf besar (`A-Z`)
