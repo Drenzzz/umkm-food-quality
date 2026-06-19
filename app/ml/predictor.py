@@ -20,13 +20,31 @@ from app.ml.model_registry import load_model_registry
 LABEL_DISPLAY = {
     "layak_jual": {
         "label": "Layak Jual",
-        "explanation": "Produk pada foto menunjukkan ciri visual yang cenderung sesuai untuk kategori layak jual, dengan warna, bentuk, dan kondisi permukaan yang tampak wajar.",
     },
     "tidak_layak_jual": {
         "label": "Tidak Layak Jual",
-        "explanation": "Produk pada foto menunjukkan indikasi visual yang cenderung sesuai dengan kategori tidak layak jual, seperti warna yang tidak normal, bentuk yang rusak, atau kondisi permukaan yang tampak tidak wajar.",
     },
 }
+
+_TIDAK_LAYAK_EXPLANATIONS = [
+    (0.8, "Produk terdeteksi memiliki kerusakan visual yang signifikan — kemungkinan gosong berlebihan, hancur, atau warna yang sangat tidak normal. Tidak disarankan untuk dipasarkan."),
+    (0.5, "Produk terdeteksi memiliki indikasi cacat visual yang cukup jelas — seperti warna tidak wajar, bentuk rusak, atau permukaan bercak. Sebaiknya diperiksa ulang sebelum dijual."),
+    (0.0, "Produk terdeteksi memiliki indikasi cacat visual yang samar — mungkin ada perbedaan warna atau bentuk minor. Disarankan pemeriksaan manual untuk memastikan."),
+]
+
+_LAYAK_EXPLANATIONS = [
+    (0.2, "Produk menunjukkan ciri visual yang sangat baik — warna, bentuk, dan kondisi permukaan tampak wajar dan layak pasarkan."),
+    (0.0, "Produk menunjukkan ciri visual yang cukup baik — secara umum layak jual, namun ada sedikit variasi warna atau bentuk yang masih dalam batas wajar."),
+]
+
+
+def _resolve_explanation(label_key: str, raw_score: float) -> str:
+    score = raw_score if label_key == "tidak_layak_jual" else 1 - raw_score
+    tiers = _TIDAK_LAYAK_EXPLANATIONS if label_key == "tidak_layak_jual" else _LAYAK_EXPLANATIONS
+    for threshold, explanation in tiers:
+        if score >= threshold:
+            return explanation
+    return tiers[-1][1]
 
 
 class Predictor:
@@ -58,7 +76,7 @@ class Predictor:
             "raw_score": round(raw_score, 6),
             "threshold_used": self.threshold_used,
             "model_version": self.model_version,
-            "explanation": display["explanation"],
+            "explanation": _resolve_explanation(label_key, raw_score),
         }
 
 
