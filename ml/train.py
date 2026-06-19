@@ -338,6 +338,8 @@ def augment_image(image: tf.Tensor) -> tf.Tensor:
     image = tf.image.random_flip_up_down(image)
     image = tf.image.random_brightness(image, max_delta=0.15)
     image = tf.image.random_contrast(image, lower=0.9, upper=1.1)
+    image = tf.image.random_hue(image, max_delta=0.05)
+    image = tf.image.random_saturation(image, lower=0.9, upper=1.1)
     return tf.clip_by_value(image, -1.0, 1.0)
 
 
