@@ -2,19 +2,19 @@
 # Copy the trained model artifacts to the VPS via scp.
 # Run this from your local machine after deploy.sh has run at least once.
 #
-# Usage: ./deploy/copy-model.sh user@vps-host
-# Example: ./deploy/copy-model.sh foodqcheck@foodqcheck.drenzzz.dev
+# Usage: ./deploy/copy-model.sh <ssh-target>
+# Example: ./deploy/copy-model.sh drenzzz@165.22.102.163
 
 set -euo pipefail
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 <ssh-target>" >&2
-  echo "Example: $0 foodqcheck@foodqcheck.drenzzz.dev" >&2
+  echo "Example: $0 drenzzz@165.22.102.163" >&2
   exit 1
 fi
 
 TARGET="$1"
-REMOTE_DIR="/opt/foodqcheck/ml/model/umkm_food_quality_v1"
+REMOTE_DIR="~/foodqcheck/ml/model/umkm_food_quality_v1"
 LOCAL_DIR="ml/model/umkm_food_quality_v1"
 
 if [[ ! -f "${LOCAL_DIR}/model.keras" ]]; then
@@ -29,19 +29,16 @@ if [[ ! -f "${LOCAL_DIR}/class_indices.json" ]]; then
 fi
 
 echo "=== Creating remote directory"
-ssh "${TARGET}" "sudo mkdir -p ${REMOTE_DIR} && sudo chown -R foodqcheck:foodqcheck /opt/foodqcheck/ml"
+ssh "${TARGET}" "mkdir -p ${REMOTE_DIR}"
 
-echo "=== Copying model.keras and class_indices.json"
+echo "=== Copying model files"
 scp "${LOCAL_DIR}/model.keras" "${LOCAL_DIR}/class_indices.json" "${TARGET}:${REMOTE_DIR}/"
 
-echo "=== Fixing ownership"
-ssh "${TARGET}" "sudo chown -R foodqcheck:foodqcheck ${REMOTE_DIR}"
-
-echo "=== Restarting service so it picks up the new model"
-ssh "${TARGET}" "sudo systemctl restart foodqcheck.service"
+echo "=== Restarting api container so it picks up the new model"
+ssh "${TARGET}" "cd ~/foodqcheck && docker compose -f deploy/docker-compose.yml restart api"
 
 echo "=== Health check"
-ssh "${TARGET}" "sleep 2 && curl --silent http://127.0.0.1:8000/health"
+ssh "${TARGET}" "sleep 3 && curl --silent http://localhost/api/health"
 
 echo
 echo "[OK] Model deployed"

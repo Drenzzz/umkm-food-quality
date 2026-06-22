@@ -1,76 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Docker Compose deployment script.
+# Usage: ./deploy/deploy.sh
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-APP_USER="foodqcheck"
-SERVICE_NAME="foodqcheck"
-BRANCH="${1:-main}"
 
 cd "${APP_DIR}"
 
-if [[ ! -f ".env" ]]; then
-  echo "[FAIL] .env not found in ${APP_DIR}."
-  echo "       Copy deploy/env.production.template to .env and fill in real secrets first."
+if [[ ! -f "deploy/env.production" ]]; then
+  echo "[FAIL] deploy/env.production not found."
+  echo "       Copy deploy/env.docker.template to deploy/env.production and fill in real secrets first."
   exit 1
 fi
 
-echo "==========================================="
-echo "  Before deploying, ensure you have:"
-echo "  1. Backed up the PostgreSQL database:"
-echo "     sudo -u postgres pg_dump umkm_food_quality > backup_$(date +%Y%m%d_%H%M%S).sql"
-echo "  2. Verified recent model files are in ml/model/"
-echo "==========================================="
-echo ""
+echo "=== 1/3 Building and starting Docker containers"
+docker compose -f deploy/docker-compose.yml up -d --build
 
-echo "=== 1/7 Pull latest source from ${BRANCH}"
-sudo -u "${APP_USER}" git fetch --all --prune
-sudo -u "${APP_USER}" git reset --hard "origin/${BRANCH}"
+echo "=== 2/3 Waiting for containers to be healthy"
+sleep 5
 
-echo "=== 2/7 Update Python venv"
-if [[ ! -d ".venv" ]]; then
-  sudo -u "${APP_USER}" python3.11 -m venv .venv
-fi
-sudo -u "${APP_USER}" .venv/bin/pip install --upgrade pip wheel
-sudo -u "${APP_USER}" .venv/bin/pip install -r requirements-backend.txt
-
-echo "=== 3/7 Apply database migrations"
-sudo -u "${APP_USER}" .venv/bin/alembic upgrade head
-
-echo "=== 4/7 Ensure model files are present"
-if [[ ! -f "ml/model/umkm_food_quality_v1/model.keras" ]]; then
-  echo "[WARN] model.keras not found. Run deploy/copy-model.sh to upload it."
-  echo "       The service will still start, but /detect will fail until the model exists."
-fi
-if [[ ! -f "ml/model/umkm_food_quality_v1/class_indices.json" ]]; then
-  echo "[WARN] class_indices.json not found. Run deploy/copy-model.sh to upload it."
-fi
-
-echo "=== 5/7 Ensure web app build is present"
-if [[ ! -d "web" ]] || [[ -z "$(ls -A web 2>/dev/null)" ]]; then
-  echo "[WARN] web/ is missing or empty. Build from the mobile project with:"
-  echo "       cd ../umkm-food-quality-mobile && ./scripts/build-web.sh"
-  echo "       Then rsync dist/ to ${APP_DIR}/web/"
-fi
-
-echo "=== 6/7 Ensure service unit is installed"
-if [[ ! -f "/etc/systemd/system/${SERVICE_NAME}.service" ]]; then
-  cp deploy/foodqcheck.service /etc/systemd/system/${SERVICE_NAME}.service
-  systemctl daemon-reload
-  systemctl enable "${SERVICE_NAME}.service"
-fi
-
-echo "=== 7/7 Reload systemd and restart service"
-systemctl daemon-reload
-systemctl restart "${SERVICE_NAME}.service"
-
-echo "=== Health check"
-sleep 2
-if curl --fail --silent --max-time 5 http://127.0.0.1:8000/health >/dev/null; then
+echo "=== 3/3 Health check"
+if curl --fail --silent --max-time 5 http://localhost/api/health >/dev/null; then
   echo "[OK] Backend health check passed"
-  curl --silent http://127.0.0.1:8000/health
+  curl --silent http://localhost/api/health
 else
   echo "[FAIL] Backend health check failed. Check logs:"
-  echo "       journalctl -u ${SERVICE_NAME} -n 100 --no-pager"
+  echo "       docker compose -f deploy/docker-compose.yml logs -f api"
   exit 1
 fi

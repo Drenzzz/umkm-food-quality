@@ -5,12 +5,12 @@ Wants=postgresql.service
 
 [Service]
 Type=notify
-User=foodqcheck
-Group=foodqcheck
-WorkingDirectory=/opt/foodqcheck
-Environment="PATH=/opt/foodqcheck/.venv/bin"
-EnvironmentFile=/opt/foodqcheck/.env
-ExecStart=/opt/foodqcheck/.venv/bin/gunicorn app.main:app \
+User=drenzzz
+Group=drenzzz
+WorkingDirectory=/home/drenzzz/foodqcheck
+Environment="PATH=/home/drenzzz/foodqcheck/.venv/bin"
+EnvironmentFile=/home/drenzzz/foodqcheck/.env
+ExecStart=/home/drenzzz/foodqcheck/.venv/bin/gunicorn app.main:app \
   --worker-class uvicorn.workers.UvicornWorker \
   --workers 2 \
   --bind 127.0.0.1:8000 \

@@ -31,6 +31,12 @@ ml/model/**/training_log.csv
 ml/model/**/class_indices.json
 ml/model/test_manifest_probe/
 
+# Build artifacts
+web/
+
+# Production secrets
+deploy/env.production
+
 .DS_Store
 .idea/
 .vscode/
