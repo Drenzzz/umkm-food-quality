@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 from app.core.config import get_settings
@@ -27,6 +28,10 @@ class ModelRegistry:
     models: list[ModelArtifact]
 
 
+# Registry metadata is read from disk on first access and cached for the
+# process lifetime. Swapping the active model requires a backend restart,
+# which the deployment flow (bind-mounted model dir + restart) already does.
+@lru_cache
 def load_model_registry() -> ModelRegistry:
     settings = get_settings()
     registry_root = Path(settings.model_registry_path)
