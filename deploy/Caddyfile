@@ -1,0 +1,56 @@
+# Caddyfile for foodqcheck — terminates real TLS at the origin via ACME.
+#
+# Replaces the previous Nginx + Cloudflare Flexible SSL setup. Because Caddy now
+# obtains certificates directly, Cloudflare must be set to "Full (Strict)" or the
+# DNS record switched to "DNS only" so the ACME HTTP challenge can reach port 80.
+#
+# SITE_ADDRESS and ACME_EMAIL are injected from the compose environment.
+
+{
+	email {$ACME_EMAIL}
+}
+
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+
+	# Native app webviews may POST to /reset-password without an /api prefix,
+	# so the allowlist stays permissive across the documented HTTP methods.
+	@disallowed_methods not method GET HEAD POST PATCH DELETE OPTIONS
+	respond @disallowed_methods 405
+
+	request_body {
+		max_size 15MB
+	}
+
+	# Strip the /api prefix before proxying to the FastAPI service.
+	handle_path /api/* {
+		reverse_proxy api:8000
+	}
+
+	# Android App Links verification file.
+	handle /.well-known/assetlinks.json {
+		root * /var/www/foodqcheck
+		header Cache-Control "public, max-age=3600"
+		file_server
+	}
+
+	# SPA: hashed assets cache aggressively, everything else falls back to index.html.
+	handle {
+		root * /var/www/foodqcheck
+
+		@static path *.js *.css *.woff *.woff2 *.png *.jpg *.jpeg *.gif *.svg *.ico *.webp
+		header @static Cache-Control "public, max-age=604800, immutable"
+
+		try_files {path} /index.html
+		file_server
+	}
+}

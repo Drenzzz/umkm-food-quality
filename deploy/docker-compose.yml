@@ -64,19 +64,33 @@ services:
         limits:
           memory: 1.5G
 
-  nginx:
-    image: nginx:1.27-alpine
+  caddy:
+    image: caddy:2.10-alpine
     restart: unless-stopped
     depends_on:
       api:
         condition: service_healthy
     ports:
       - "80:80"
+      - "443:443"
+    environment:
+      # SITE_ADDRESS is the public domain Caddy obtains a certificate for.
+      # ACME_EMAIL receives Let's Encrypt expiry notices.
+      SITE_ADDRESS: ${SITE_ADDRESS:?SITE_ADDRESS is required}
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL is required}
     volumes:
-      - ./nginx.docker.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       # Web SPA built from umkm-food-quality-mobile → dist/ → rsync to ~/foodqcheck/web/
       - ../web:/var/www/foodqcheck:ro
+      # Persist issued certificates so restarts don't re-hit ACME rate limits.
+      - caddy_data:/data
+      - caddy_config:/config
     deploy:
       resources:
         limits:
           memory: 128M
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
