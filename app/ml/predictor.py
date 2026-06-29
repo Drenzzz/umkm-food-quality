@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import io
 import ipaddress
 import json
@@ -57,7 +58,9 @@ class Predictor:
 
     async def predict_from_url(self, image_url: str) -> dict[str, float | str]:
         image_bytes = await download_image(image_url)
-        return self.predict_from_image_bytes(image_bytes)
+        # TF inference is CPU-bound and blocking; offload it to a worker thread
+        # so a slow prediction does not stall the Uvicorn event loop.
+        return await asyncio.to_thread(self.predict_from_image_bytes, image_bytes)
 
     def predict_from_image_bytes(self, image_bytes: bytes) -> dict[str, float | str]:
         tensor = preprocess_image(image_bytes)
