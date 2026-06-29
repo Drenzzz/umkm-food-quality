@@ -15,7 +15,7 @@ Struktur ini sengaja dipisah dari mobile agar pengembangan backend dan machine l
 umkm-food-quality/
 ├── app/                 # FastAPI backend (API, auth, ML inference)
 ├── dataset/             # Dataset (not committed)
-├── deploy/              # Docker, Nginx, deployment scripts
+├── deploy/              # Docker, Caddy, deployment scripts
 ├── docs/                # Technical documentation
 ├── ml/                  # ML pipeline (train, evaluate, artifacts)
 ├── scripts/             # Utility scripts
@@ -117,6 +117,6 @@ Backend menggunakan JWT (HS256) untuk autentikasi. Fitur autentikasi meliputi:
 Deployment ke VPS menggunakan Docker Compose. Lihat `deploy/` untuk:
 
 - `Dockerfile` — multi-stage build, non-root user
-- `docker-compose.yml` — db, api, nginx
+- `docker-compose.yml` — db, api, caddy
 - `deploy.sh` — automated deployment script
-- `nginx.conf` / `nginx.docker.conf` — reverse proxy config
+- `Caddyfile` — reverse proxy config with automatic HTTPS

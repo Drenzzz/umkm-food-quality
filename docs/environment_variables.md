@@ -24,13 +24,8 @@ Reference for all backend and ML environment variables.
 | `IMAGE_DOWNLOAD_MAX_REDIRECTS` | No | `3` | Maximum HTTP redirect chain length. |
 | `IMAGE_DOWNLOAD_TIMEOUT_SECONDS` | No | `20` | HTTP download timeout in seconds. |
 | `WARMUP_PREDICTOR_ON_STARTUP` | No | `true` | Load TF model at startup. Set false for fast dev iteration. |
-| `EMAIL_BACKEND` | No | `console` | Email delivery: `console`, `smtp`, or `resend`. |
-| `RESEND_API_KEY` | No | | Resend API key (recommended for VPS). |
-| `SMTP_HOST` | No | | SMTP server hostname. |
-| `SMTP_PORT` | No | `587` | SMTP server port. |
-| `SMTP_USER` | No | | SMTP authentication username. |
-| `SMTP_PASSWORD` | No | | SMTP authentication password. |
-| `EMAIL_FROM` | No | `noreply@foodqcheck.local` | Sender email address. |
+| `SITE_ADDRESS` | Deploy | `foodqcheck.drenzzz.dev` | Public domain Caddy obtains a TLS certificate for. |
+| `ACME_EMAIL` | Deploy | `admin@drenzzz.dev` | Contact email for Let's Encrypt certificate notices. |
 
 ## Value Rules
 
@@ -65,11 +60,12 @@ Values: `development`, `test`, `production`.
 - Leave empty to allow any public host (private/loopback IPs always rejected).
 - Set to `res.cloudinary.com` for production.
 
-### `EMAIL_BACKEND`
+### `SITE_ADDRESS` and `ACME_EMAIL`
 
-- `console`: Log emails to stdout (development).
-- `smtp`: Send via SMTP server (requires `SMTP_*` variables).
-- `resend`: Send via Resend HTTPS API (recommended for VPS — works on port 443).
+- Used only by the Caddy reverse proxy in the Docker deployment.
+- `SITE_ADDRESS` is the public domain Caddy requests a certificate for.
+- `ACME_EMAIL` receives Let's Encrypt expiry notices.
+- Cloudflare must be set to "Full (Strict)" or the DNS record to "DNS only" so the ACME challenge can reach the origin.
 
 ## Auth Validation Rules
 

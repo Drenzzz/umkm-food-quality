@@ -21,7 +21,7 @@ Manifest model aktif:
 ### API
 
 - FastAPI app dijalankan dari `app.main:app`
-- Production: Gunicorn + Uvicorn workers (2 workers) di belakang Nginx reverse proxy
+- Production: Gunicorn + Uvicorn workers (2 workers) di belakang Caddy reverse proxy
 
 ### Database
 
@@ -39,7 +39,7 @@ Manifest model aktif:
 ## Web SPA
 
 - Frontend di-build dari project `umkm-food-quality-mobile` lewat `scripts/build-web.sh`
-- Static bundle di-serve oleh Nginx di `/opt/foodqcheck/web/`
+- Static bundle di-serve oleh Caddy di `/var/www/foodqcheck`
 - `/api/*` di-strip prefix-nya lalu di-proxy ke backend
 
 ## Local Run Command
@@ -68,10 +68,8 @@ Manifest model aktif:
 - `IMAGE_DOWNLOAD_MAX_REDIRECTS`
 - `IMAGE_DOWNLOAD_TIMEOUT_SECONDS`
 - `WARMUP_PREDICTOR_ON_STARTUP`
-- `EMAIL_BACKEND` — `console`, `smtp`, atau `resend` (recommended untuk VPS)
-- `RESEND_API_KEY` — required jika `EMAIL_BACKEND=resend`
-- `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` — required jika `EMAIL_BACKEND=smtp`
-- `EMAIL_FROM`
+- `SITE_ADDRESS` — public domain Caddy obtains a TLS certificate for (Docker deploy)
+- `ACME_EMAIL` — contact email for Let's Encrypt notices (Docker deploy)
 
 ## Deployment Checklist
 
@@ -84,9 +82,7 @@ Manifest model aktif:
 7. Set `MODEL_QUALITY_STRICT=true` jika runtime harus gagal saat model aktif tidak lolos quality gate
 8. Set `ALLOWED_IMAGE_DOMAINS=res.cloudinary.com` untuk membatasi sumber gambar ke Cloudinary saja
 9. Set `APP_ENV=production` agar warmup aktif dan CORS tidak merge dengan localhost defaults
-10. Set `EMAIL_BACKEND=resend` (recommended) atau `smtp` (kalau VPS allow SMTP):
-    - **Resend**: Daftar di https://resend.com, buat API key, set `RESEND_API_KEY`. Sender harus domain yang sudah diverifikasi di Resend, atau pakai `onboarding@resend.dev` untuk testing (hanya bisa kirim ke email owner akun Resend). Port HTTPS 443, jadi work di semua VPS provider yang block SMTP.
-    - **SMTP/Gmail**: Set `SMTP_*` variables. Perlu Gmail App Password. **TIDAK akan work di VPS yang block port 25/465/587** (e.g. DigitalOcean).
+10. Set `SITE_ADDRESS` dan `ACME_EMAIL` agar Caddy bisa menerbitkan sertifikat TLS. Pastikan Cloudflare di mode "Full (Strict)" atau DNS record "DNS only" supaya ACME challenge bisa menjangkau origin.
 11. Set `ALLOWED_HOSTS` ke hostname production (mis. `foodqcheck.drenzzz.dev,localhost,127.0.0.1`)
 12. Pastikan auth endpoint dan detect endpoint lolos smoke test
 
@@ -95,12 +91,12 @@ Manifest model aktif:
 - OpenAPI docs (`/docs`, `/redoc`, `/openapi.json`) otomatis di-disable saat `APP_ENV=production`
 - CORS dibatasi ke specific methods (`GET, POST, PATCH, DELETE`) dan headers (`Authorization, Content-Type`)
 - `TrustedHostMiddleware` memvalidasi Host header terhadap `ALLOWED_HOSTS`
-- Security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy) dipasang di Nginx
+- Security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, HSTS) dipasang di Caddy
 - JWT divalidasi dengan `iss` dan `aud` claims
 - Password complexity: minimal 8 karakter, harus ada huruf besar, kecil, dan angka
 - DB connection pool: `pool_size=5, max_overflow=0` untuk konservatif di 4GB VPS
 - fail2ban aktif untuk SSH protection
-- UFW aktif: hanya port 22 (SSH) dan 80 (Nginx) yang dibuka
+- UFW aktif: hanya port 22 (SSH), 80, dan 443 (Caddy) yang dibuka
 
 ## Fallback Rule
 

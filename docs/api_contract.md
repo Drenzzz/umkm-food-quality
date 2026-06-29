@@ -67,7 +67,6 @@ Success response (201):
   "id": 1,
   "name": "string",
   "email": "string",
-  "email_verified_at": null,
   "role": "user",
   "created_at": "2026-05-11T12:00:00Z"
 }
@@ -90,12 +89,9 @@ Success response:
 {
   "access_token": "string",
   "token_type": "bearer",
-  "expires_in_minutes": 60,
-  "email_verified_at": "2026-05-11T12:00:00Z"
+  "expires_in_minutes": 60
 }
 ```
-
-`email_verified_at` is `null` if the user has not verified their email yet.
 
 ### `GET /auth/me`
 
@@ -108,7 +104,6 @@ Success response:
   "id": 1,
   "name": "string",
   "email": "string",
-  "email_verified_at": "2026-05-11T12:00:00Z",
   "role": "user",
   "created_at": "2026-05-11T12:00:00Z"
 }

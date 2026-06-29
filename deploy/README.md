@@ -3,12 +3,13 @@
 ## Architecture
 
 ```
-Cloudflare DNS (Flexible SSL, terminates HTTPS)
+Cloudflare DNS (Full (Strict) or DNS only)
         |
         v
   VPS (Ubuntu 22.04)
   +--------------------------------------+
-  | Nginx container (port 80)            |
+  | Caddy container (ports 80, 443)     |
+  |   automatic HTTPS via Let's Encrypt |
   |   /                  -> web SPA      |
   |   /api/              -> strip prefix |
   +------------------+-------------------+
@@ -30,8 +31,9 @@ Cloudflare DNS (Flexible SSL, terminates HTTPS)
 
 - VPS with Docker Engine + Docker Compose v2 installed
 - SSH key access to VPS as `drenzzz` user
-- Domain `foodqcheck.drenzzz.dev` pointed to VPS IP (Cloudflare A record, Proxied)
-- Cloudflare SSL/TLS mode set to **Flexible**
+- Domain `foodqcheck.drenzzz.dev` pointed to VPS IP
+- Cloudflare SSL/TLS mode set to **Full (Strict)**, or the DNS record set to
+  **DNS only**, so Caddy's ACME challenge can reach ports 80/443 on the origin
 - Trained model files available locally (`ml/model/umkm_food_quality_v1/`)
 
 ## Quick Deploy (Fresh VPS)
@@ -85,6 +87,8 @@ Fill in:
 - `SECRET_KEY` — generate with: `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`
 - `CORS_ORIGINS` — `https://foodqcheck.drenzzz.dev`
 - `ALLOWED_HOSTS` — `foodqcheck.drenzzz.dev,localhost,127.0.0.1`
+- `SITE_ADDRESS` — `foodqcheck.drenzzz.dev` (domain Caddy requests a certificate for)
+- `ACME_EMAIL` — your contact email for Let's Encrypt notices
 
 ### 4. Build web SPA (on local machine)
 
@@ -146,8 +150,8 @@ cd umkm-food-quality-mobile
 VITE_API_BASE_URL=/api bun run build
 rsync -avz --delete dist/ drenzzz@<VPS-IP>:~/foodqcheck/web/
 
-# On VPS, restart nginx container
-docker compose -f deploy/docker-compose.yml restart nginx
+# On VPS, restart caddy container
+docker compose -f deploy/docker-compose.yml restart caddy
 ```
 
 ## Build Android APK
@@ -182,8 +186,9 @@ keytool -genkey -v -keystore release.keystore -alias foodqcheck \
 - **502 Bad Gateway** — API container not running. Check: `docker compose -f deploy/docker-compose.yml logs api`
 - **Database connection refused** — Wrong `DB_PASSWORD` or PostgreSQL not ready. Check: `docker compose -f deploy/docker-compose.yml logs db`
 - **Model not loaded** — Model files missing from bind mount. Check: `ls ~/foodqcheck/ml/model/umkm_food_quality_v1/`
-- **Web app 404 on refresh** — `try_files` in nginx config not working. Verify nginx config is mounted correctly.
-- **Rate limiting in dev** — Default rate limits apply. For testing, use `EMAIL_BACKEND=console` and test from localhost.
+- **Web app 404 on refresh** — `try_files` in the Caddyfile not working. Verify the Caddyfile is mounted correctly and the SPA fallback to `/index.html` is present.
+- **TLS certificate not issued** — Caddy cannot reach ports 80/443. Ensure Cloudflare is set to **Full (Strict)** or **DNS only**, and `SITE_ADDRESS` resolves to this host. Check: `docker compose -f deploy/docker-compose.yml logs caddy`
+- **Rate limiting in dev** — Default rate limits apply. For testing, run requests from localhost.
 
 ## Rollback
 
