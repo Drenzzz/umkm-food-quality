@@ -32,7 +32,6 @@ def create_user(db: Session, payload: RegisterRequest) -> User:
         email=payload.email,
         password_hash=hash_password(payload.password),
         role="user",
-        email_verified_at=datetime.now(UTC),
     )
     db.add(user)
     try:

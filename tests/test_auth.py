@@ -441,20 +441,6 @@ def test_register_normalizes_email_to_lowercase() -> None:
         assert response.json()["email"] == "norm@example.com"
 
 
-def test_register_auto_verifies_email() -> None:
-    with TestClient(app) as client:
-        response = client.post(
-            "/auth/register",
-            json={
-                "name": "Auto Verify User",
-                "email": "auto-verify@example.com",
-                "password": "Password123",
-            },
-        )
-        assert response.status_code == 201
-        assert response.json()["email_verified_at"] is not None
-
-
 def test_name_strips_html_tags() -> None:
     with TestClient(app) as client:
         response = client.post(

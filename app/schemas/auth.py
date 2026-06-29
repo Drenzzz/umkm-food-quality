@@ -80,7 +80,6 @@ class UserResponse(BaseModel):
     id: int
     name: str
     email: EmailStr
-    email_verified_at: datetime | None
     role: str
     created_at: datetime
 
@@ -89,7 +88,6 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str
     expires_in_minutes: int
-    email_verified_at: datetime | None = None
 
 
 class MessageResponse(BaseModel):

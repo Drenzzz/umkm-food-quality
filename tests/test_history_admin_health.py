@@ -18,7 +18,6 @@ os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
 os.environ["MODEL_PATH"] = "ml/model/umkm_food_quality_v1/model.keras"
 os.environ["CLASS_INDICES_PATH"] = "ml/model/umkm_food_quality_v1/class_indices.json"
 os.environ["CORS_ORIGINS"] = "http://localhost:3000"
-os.environ["EMAIL_BACKEND"] = "console"
 os.environ["ALLOWED_IMAGE_DOMAINS"] = ""
 
 if TEST_DB_PATH.exists():
