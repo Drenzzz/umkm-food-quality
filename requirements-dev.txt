@@ -4,3 +4,8 @@
 
 pytest==9.0.3
 respx==0.23.1
+
+# ONNX export tools — used once to convert .keras to .onnx, not needed at runtime.
+tf2onnx==1.17.0
+onnx==1.22.0
+onnxruntime==1.27.0
