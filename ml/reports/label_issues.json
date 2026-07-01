@@ -1,0 +1,20 @@
+{
+  "total_evaluated": 509,
+  "potential_label_issues": 2,
+  "issues": [
+    {
+      "image_id": "manual_batch_000102",
+      "relative_path": "dataset/working/manual_normalized/biskuit/layak_jual/manual_efe03f0d307e.jpg",
+      "given_label": "layak_jual",
+      "split": "test",
+      "product_domain": "biskuit_kukis"
+    },
+    {
+      "image_id": "manual_batch_000145",
+      "relative_path": "dataset/working/manual_normalized/keripik/tidak_layak_jual/manual_5e4cac85f797.jpg",
+      "given_label": "tidak_layak_jual",
+      "split": "val",
+      "product_domain": "keripik"
+    }
+  ]
+}

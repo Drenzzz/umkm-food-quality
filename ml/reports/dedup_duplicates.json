@@ -1,0 +1,461 @@
+{
+  "total_images_indexed": 739,
+  "images_missing_from_disk": 0,
+  "total_near_duplicate_pairs": 443,
+  "cross_split_duplicates": 0,
+  "same_split_duplicates": 443,
+  "leakage_detected": false,
+  "cross_split_pairs": [],
+  "same_split_pairs_summary": [
+    {
+      "image_a": "biskuit/layak_jual/manual_01f76c3ea425.jpg",
+      "image_b": "biskuit/layak_jual/manual_efe03f0d307e.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_0d394e161005.jpg",
+      "image_b": "biskuit/layak_jual/manual_9378b7ed24a9.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_0d394e161005.jpg",
+      "image_b": "kukis/layak_jual/manual_681f1ed8c551.jpg",
+      "distance": 6,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_0d394e161005.jpg",
+      "image_b": "biskuit/layak_jual/manual_91b5923e53ed.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_0d394e161005.jpg",
+      "image_b": "biskuit/layak_jual/manual_756aa04a592c.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_0d394e161005.jpg",
+      "image_b": "biskuit/layak_jual/manual_bcd1a7e7c0ff.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_0d394e161005.jpg",
+      "image_b": "biskuit/layak_jual/manual_d33b2dbe43e1.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_14ccb1e694f1.jpg",
+      "image_b": "biskuit/layak_jual/manual_83d89017a750.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_294c77b48817.jpg",
+      "image_b": "biskuit/layak_jual/manual_861063271b51.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_3ae3fd0c034f.jpg",
+      "image_b": "biskuit/layak_jual/manual_155e372e2f8b.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_4a8e8509989b.jpg",
+      "image_b": "biskuit/layak_jual/manual_9f2188655504.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_5685b94169f6.jpg",
+      "image_b": "biskuit/layak_jual/manual_b6f3447c95bf.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_5685b94169f6.jpg",
+      "image_b": "biskuit/layak_jual/manual_bcd1a7e7c0ff.jpg",
+      "distance": 8,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_5685b94169f6.jpg",
+      "image_b": "biskuit/layak_jual/manual_756aa04a592c.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_5685b94169f6.jpg",
+      "image_b": "biskuit/tidak_layak_jual/manual_1da9707ba622.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_5685b94169f6.jpg",
+      "image_b": "kukis/layak_jual/manual_93b113ead1f6.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_5685b94169f6.jpg",
+      "image_b": "kukis/layak_jual/manual_ebf2c2029ed0.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_5685b94169f6.jpg",
+      "image_b": "kukis/tidak_layak_jual/manual_5d0f172eba31.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_5d51289c60cf.jpg",
+      "image_b": "biskuit/layak_jual/manual_9dc0c62901c7.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_60dc10bb4f7a.jpg",
+      "image_b": "biskuit/layak_jual/manual_de98b494a027.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_76566d16ca20.jpg",
+      "image_b": "biskuit/layak_jual/manual_a918384fdb84.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_76566d16ca20.jpg",
+      "image_b": "kukis/layak_jual/manual_a766ca13ea6e.jpg",
+      "distance": 6,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_76566d16ca20.jpg",
+      "image_b": "kukis/layak_jual/manual_4748fd6b7807.jpg",
+      "distance": 6,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_77fb4af1812c.jpg",
+      "image_b": "biskuit/layak_jual/manual_169c550cbbfd.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_83e566b2eaff.jpg",
+      "image_b": "biskuit/layak_jual/manual_cb4dfbc4f0d5.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_8a3a59ee8cb8.jpg",
+      "image_b": "biskuit/layak_jual/manual_cd6a8cba5811.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_90871bf38f87.jpg",
+      "image_b": "biskuit/layak_jual/manual_d86da17cd77f.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_91b5923e53ed.jpg",
+      "image_b": "biskuit/layak_jual/manual_d33b2dbe43e1.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_91b5923e53ed.jpg",
+      "image_b": "kukis/layak_jual/manual_6df6e1f42e1a.jpg",
+      "distance": 6,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_91b5923e53ed.jpg",
+      "image_b": "kukis/layak_jual/manual_f3537ec3a2c5.jpg",
+      "distance": 6,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_91b5923e53ed.jpg",
+      "image_b": "kukis/layak_jual/manual_681f1ed8c551.jpg",
+      "distance": 8,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_91b5923e53ed.jpg",
+      "image_b": "biskuit/layak_jual/manual_756aa04a592c.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_91b5923e53ed.jpg",
+      "image_b": "biskuit/layak_jual/manual_9378b7ed24a9.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_91b5923e53ed.jpg",
+      "image_b": "kukis/layak_jual/manual_466fed0aef78.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_91b5923e53ed.jpg",
+      "image_b": "kukis/layak_jual/manual_a41e19d5182f.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_91b5923e53ed.jpg",
+      "image_b": "kukis/layak_jual/manual_05d042892799.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_91b5923e53ed.jpg",
+      "image_b": "kukis/layak_jual/manual_78cd1741091b.jpg",
+      "distance": 10,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_924c8359fd6e.jpg",
+      "image_b": "biskuit/layak_jual/manual_cf9ee5e17aeb.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_966d9d5645dc.jpg",
+      "image_b": "biskuit/layak_jual/manual_b09649ddc130.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_97101d71ab44.jpg",
+      "image_b": "biskuit/layak_jual/manual_3d12e8059e3a.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_9e0493f0f9b0.jpg",
+      "image_b": "biskuit/layak_jual/manual_1c949590bc1e.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_9f82db0ef8cb.jpg",
+      "image_b": "biskuit/layak_jual/manual_7e90e2fb26bc.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_a6732da981f4.jpg",
+      "image_b": "biskuit/layak_jual/manual_d779485054df.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_ad832e7e7761.jpg",
+      "image_b": "biskuit/layak_jual/manual_94e9e1e218c7.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_afb9c5208474.jpg",
+      "image_b": "biskuit/layak_jual/manual_5357049053fb.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_c5029eb6b72b.jpg",
+      "image_b": "biskuit/layak_jual/manual_dc7cb560fb13.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_cc2d5f85defe.jpg",
+      "image_b": "biskuit/layak_jual/manual_95e5752475d5.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_d1aa8132810f.jpg",
+      "image_b": "biskuit/layak_jual/manual_8259ef1e6213.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_d7349455d16d.jpg",
+      "image_b": "biskuit/layak_jual/manual_7a935e2ac12d.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    },
+    {
+      "image_a": "biskuit/layak_jual/manual_d909f5c0b08c.jpg",
+      "image_b": "biskuit/layak_jual/manual_c63613d91304.jpg",
+      "distance": 0,
+      "split_a": "unknown",
+      "split_b": "unknown",
+      "label_a": "unknown",
+      "label_b": "unknown"
+    }
+  ]
+}

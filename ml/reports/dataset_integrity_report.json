@@ -1,0 +1,13 @@
+{
+  "dataset_path": "/home/drenzzz/tugad/capstone/project/umkm-food-quality/dataset/metadata/manual_split_metadata.csv",
+  "total_rows": 509,
+  "dedup": {
+    "total_near_duplicate_pairs": 443,
+    "cross_split_duplicates": 0,
+    "leakage_detected": false
+  },
+  "label_quality": {
+    "total_evaluated": 509,
+    "potential_label_issues": 2
+  }
+}
