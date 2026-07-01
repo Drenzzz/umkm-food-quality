@@ -1,0 +1,9 @@
+{
+  "source_model": "ml/model/umkm_food_quality_v1/model.keras",
+  "tflite_model": "ml/model/umkm_food_quality_v1/model.tflite",
+  "tflite_size_bytes": 9528204,
+  "optimization": "none",
+  "parity_tolerance": 1e-05,
+  "parity_samples": 10,
+  "parity_passed": true
+}
