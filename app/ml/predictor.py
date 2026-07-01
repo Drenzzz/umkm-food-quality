@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import io
 import ipaddress
 import json
@@ -9,6 +10,9 @@ from functools import lru_cache
 from urllib.parse import urlparse
 
 import httpx
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from PIL import Image
@@ -65,7 +69,9 @@ class Predictor:
     def predict_from_image_bytes(self, image_bytes: bytes) -> dict[str, float | str]:
         tensor = preprocess_image(image_bytes)
         raw_score = float(self.model.predict(tensor, verbose=0).flatten()[0])
-        return self._map_prediction(raw_score)
+        result = self._map_prediction(raw_score)
+        result["heatmap_base64"] = generate_gradcam_heatmap(self.model, tensor)
+        return result
 
     def _map_prediction(self, raw_score: float) -> dict[str, float | str]:
         target_index = 1 if raw_score >= self.threshold_used else 0
@@ -163,6 +169,60 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
         array = np.asarray(image, dtype=np.float32)
     array = np.expand_dims(array, axis=0)
     return preprocess_input(array)
+
+
+# MobileNetV2 last convolutional layer — used for Grad-CAM heatmap generation.
+# Located at the end of the backbone before global average pooling.
+_LAST_CONV_LAYER_NAME = "Conv_1"
+
+
+def generate_gradcam_heatmap(model: tf.keras.Model, tensor: np.ndarray) -> str | None:
+    """Generate a Grad-CAM heatmap and return it as a base64-encoded PNG.
+
+    Returns None if heatmap generation fails (non-critical, prediction still valid).
+    """
+    try:
+        last_conv_layer = model.get_layer(_LAST_CONV_LAYER_NAME)
+        grad_model = tf.keras.Model(
+            inputs=model.input,
+            outputs=[last_conv_layer.output, model.output],
+        )
+
+        with tf.GradientTape() as tape:
+            conv_outputs, predictions = grad_model(tensor)
+            # For binary sigmoid: target the predicted class output
+            score = predictions[:, 0]
+
+        grads = tape.gradient(score, conv_outputs)
+        pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+
+        conv_outputs = conv_outputs[0]
+        heatmap = conv_outputs @ pooled_grads[..., tf.newaxis]
+        heatmap = tf.squeeze(heatmap)
+        heatmap = tf.maximum(heatmap, 0) / (tf.math.reduce_max(heatmap) + 1e-8)
+        heatmap = heatmap.numpy()
+
+        # Superimpose heatmap on a gray background for clarity
+        heatmap_resized = np.uint8(255 * heatmap)
+        cmap = plt.get_cmap("jet")
+        heatmap_colored = cmap(heatmap_resized)[:, :, :3]
+        heatmap_colored = np.uint8(heatmap_colored * 255)
+
+        # Create a neutral background and blend
+        background = np.ones_like(heatmap_colored, dtype=np.uint8) * 200
+        blended = np.where(
+            heatmap[..., np.newaxis] > 0.1,
+            (0.6 * heatmap_colored + 0.4 * background).astype(np.uint8),
+            background,
+        )
+
+        img = Image.fromarray(blended)
+        buf = io.BytesIO()
+        img.save(buf, format="PNG", optimize=True)
+        return base64.b64encode(buf.getvalue()).decode("ascii")
+    except Exception:
+        # Grad-CAM failure is non-critical — prediction result is still valid
+        return None
 
 
 @lru_cache

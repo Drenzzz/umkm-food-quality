@@ -19,3 +19,4 @@ python-multipart==0.0.32
 httpx==0.28.1
 slowapi==0.1.9
 gunicorn==23.0.0
+matplotlib==3.10.7
