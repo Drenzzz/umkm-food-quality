@@ -85,6 +85,7 @@ Manifest model aktif:
 10. Set `SITE_ADDRESS` dan `ACME_EMAIL` agar Caddy bisa menerbitkan sertifikat TLS. Pastikan Cloudflare di mode "Full (Strict)" atau DNS record "DNS only" supaya ACME challenge bisa menjangkau origin.
 11. Set `ALLOWED_HOSTS` ke hostname production (mis. `foodqcheck.drenzzz.dev,localhost,127.0.0.1`)
 12. Pastikan auth endpoint dan detect endpoint lolos smoke test
+13. Buat admin user: `python scripts/seed_admin.py admin@foodqcheck.com --create --name "Admin" --password "Password123"`
 
 ## Production Hardening
 

@@ -14,7 +14,7 @@ Struktur ini sengaja dipisah dari mobile agar pengembangan backend dan machine l
 ```text
 umkm-food-quality/
 ├── app/                 # FastAPI backend (API, auth, ML inference)
-├── dataset/             # Dataset (not committed)
+├── dataset/             # Dataset (images committed for reproducibility)
 ├── deploy/              # Docker, Caddy, deployment scripts
 ├── docs/                # Technical documentation
 ├── ml/                  # ML pipeline (train, evaluate, artifacts)

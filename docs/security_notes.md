@@ -66,6 +66,7 @@ Semua endpoint yang menerima password (`register`, `change-password`) men-valida
 - `user` hanya boleh melihat riwayat miliknya sendiri.
 - `admin` boleh mengakses dashboard dan daftar semua deteksi.
 - Role check harus dilakukan di dependency layer, bukan hanya di frontend.
+- Grad-CAM heatmap (`heatmap_base64`) hanya ditampilkan di admin panel. User-facing pages tidak menampilkan heatmap meskipun data tersedia di response.
 
 ## Logging Rules
 

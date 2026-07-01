@@ -18,12 +18,21 @@ File berikut harus tetap lokal dan tidak boleh dijadikan bagian normal dari repo
 
 - `.env`
 - seluruh virtual environment lokal
-- output preprocessing penuh di `dataset/working/`
-- output split final di `dataset/final/`
+- output preprocessing penuh di `dataset/final/`
 - file archive hasil pembersihan dataset
-- artefak model hasil training seperti `model.keras`, `training_history.json`, `training_log.csv`, `class_indices.json`, dan seluruh isi folder `evaluation/`
 - metadata hasil merge yang mengandung data primer real seperti `master_metadata.csv`
 - metadata hasil parser form real seperti `form_image_metadata.csv`
+
+## What Is Tracked for Reproducibility
+
+File berikut **di-track ke Git** agar setelah clone backend bisa langsung jalan tanpa retrain:
+
+- `ml/model/umkm_food_quality_v1/model.keras` — model trained
+- `ml/model/umkm_food_quality_v1/class_indices.json` — label mapping
+- `ml/model/umkm_food_quality_v1/model.tflite` + `model.onnx` — exported models
+- `ml/model/umkm_food_quality_v1/evaluation/` — evaluation reports
+- `ml/model/active_model.json` — active model selector
+- `dataset/working/manual_normalized/` — trained dataset images (739 files)
 
 ## Why This Boundary Exists
 
@@ -36,12 +45,13 @@ Boundary ini dipakai supaya:
 
 ## Artifact Policy
 
-### Public ML Artifacts
+### ML Artifacts
 
-Artefak model dari eksperimen publik diperlakukan sebagai output lokal. Yang disimpan di repo hanya:
+Artefak model (`.keras`, `.tflite`, `.onnx`, `class_indices.json`, evaluation reports) **di-track ke Git** agar reproducible. Clone → langsung jalan tanpa retrain.
 
-- code untuk membangunnya
-- dokumen ringkasan hasil
+Artefak yang tetap di-ignore:
+- `ml/model/*.h5`, `ml/model/*.ckpt` (format lama)
+- `ml/model/**/artifact_manifest.json` (metadata internal training)
 
 ### Primary Data Artifacts
 
@@ -53,10 +63,12 @@ Artefak data primer diperlakukan lebih ketat karena bisa mengandung sumber form,
 
 - `.env` dan turunannya
 - `.venv-*`
-- `dataset/working/**/*.jpg`
 - `dataset/final/`
-- `ml/model/**`
-- metadata primer yang tidak dimaksudkan sebagai contoh kecil
+- `dataset/archive/**/*.txt`
+- `dataset/metadata/master_metadata.csv`
+- `dataset/metadata/form_image_metadata.csv`
+- `ml/model/*.h5`, `ml/model/*.ckpt`
+- `ml/model/**/artifact_manifest.json`
 
 ## Commit Rule
 

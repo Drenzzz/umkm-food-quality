@@ -29,6 +29,7 @@ Response inferensi wajib memuat field berikut:
 | `model_version` | string | Nama eksperimen atau versi model aktif. |
 | `explanation` | string | Penjelasan singkat hasil inferensi. |
 | `image_url` | string | Referensi gambar yang dikirim ke backend. |
+| `heatmap_base64` | string or null | Grad-CAM heatmap (base64 PNG) — admin-only, shows which image areas the model focused on. Null for historical data. |
 | `created_at` | string | Waktu hasil deteksi dicatat. |
 
 ## Label Mapping Rule
@@ -68,3 +69,18 @@ Backend membaca registry model dari `MODEL_REGISTRY_PATH` dan memilih model akti
 ## Error Rule
 
 Jika inferensi gagal, backend harus mengembalikan error yang tidak membocorkan detail internal seperti path file lokal, credential, atau stack trace mentah.
+
+## Grad-CAM Heatmap
+
+Setiap deteksi menghasilkan heatmap Grad-CAM yang menunjukkan area gambar yang paling mempengaruhi keputusan model.
+
+**Layer yang digunakan:** `Conv_1` (last convolutional layer MobileNetV2).
+
+**Flow:**
+1. Forward pass → extract feature maps dari `Conv_1`
+2. Hitung gradient output terhadap feature maps
+3. Weighted combination + ReLU → normalize → resize ke 224×224
+4. Superimpose pada background abu-abu dengan colormap `jet`
+5. Encode sebagai base64 PNG → simpan di `heatmap_base64`
+
+Heatmap tersedia di response `/detect` (field `heatmap_base64`). Hanya ditampilkan di admin panel, bukan di user-facing pages.

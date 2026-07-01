@@ -169,9 +169,12 @@ Success response (201):
   "model_version": "umkm_food_quality_v1",
   "explanation": "string",
   "image_url": "https://example.com/image.jpg",
+  "heatmap_base64": "iVBORw0KGgo...",
   "created_at": "2026-05-11T12:00:00Z"
 }
 ```
+
+`heatmap_base64` contains a Grad-CAM heatmap (base64 PNG) showing which image areas the model focused on. Admin-only feature — heatmap is generated server-side for every detection and stored in the database. Null for historical records.
 
 ## History Contracts
 
