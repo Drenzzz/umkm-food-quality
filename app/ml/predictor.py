@@ -10,8 +10,9 @@ from urllib.parse import urlparse
 
 import httpx
 import numpy as np
-import tflite_runtime.interpreter as tflite
+import tensorflow as tf
 from PIL import Image
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
 from app.core.config import get_settings
 from app.ml.model_registry import load_model_registry
@@ -48,14 +49,12 @@ def _resolve_explanation(label_key: str, raw_score: float) -> str:
 
 
 class Predictor:
-    def __init__(self, interpreter: tflite.Interpreter, class_indices: dict[str, int], threshold_used: float, model_version: str) -> None:
-        self.interpreter = interpreter
+    def __init__(self, model: tf.keras.Model, class_indices: dict[str, int], threshold_used: float, model_version: str) -> None:
+        self.model = model
         self.class_indices = class_indices
         self.threshold_used = threshold_used
         self.model_version = model_version
         self.index_to_label = {index: key for key, index in class_indices.items()}
-        self._input_details = interpreter.get_input_details()
-        self._output_details = interpreter.get_output_details()
 
     async def predict_from_url(self, image_url: str) -> dict[str, float | str]:
         image_bytes = await download_image(image_url)
@@ -65,9 +64,7 @@ class Predictor:
 
     def predict_from_image_bytes(self, image_bytes: bytes) -> dict[str, float | str]:
         tensor = preprocess_image(image_bytes)
-        self.interpreter.set_tensor(self._input_details[0]["index"], tensor)
-        self.interpreter.invoke()
-        raw_score = float(self.interpreter.get_tensor(self._output_details[0]["index"]).flatten()[0])
+        raw_score = float(self.model.predict(tensor, verbose=0).flatten()[0])
         return self._map_prediction(raw_score)
 
     def _map_prediction(self, raw_score: float) -> dict[str, float | str]:
@@ -165,24 +162,16 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
         image = image.resize((224, 224), resample=Image.Resampling.LANCZOS)
         array = np.asarray(image, dtype=np.float32)
     array = np.expand_dims(array, axis=0)
-    # MobileNetV2 preprocess_input: maps [0,255] to [-1,1]
-    return array / 127.5 - 1.0
+    return preprocess_input(array)
 
 
 @lru_cache
 def get_predictor() -> Predictor:
     active_model = load_model_registry().active_model
-    # Resolve .tflite path: prefer .tflite if it exists alongside .keras
-    model_path = active_model.model_path
-    if model_path.suffix == ".keras":
-        tflite_path = model_path.with_suffix(".tflite")
-        if tflite_path.exists():
-            model_path = tflite_path
-    interpreter = tflite.Interpreter(model_path=str(model_path))
-    interpreter.allocate_tensors()
+    model = tf.keras.models.load_model(active_model.model_path)
     class_indices = json.loads(active_model.class_indices_path.read_text(encoding="utf-8"))
     return Predictor(
-        interpreter=interpreter,
+        model=model,
         class_indices=class_indices,
         threshold_used=active_model.threshold,
         model_version=active_model.experiment_id,
@@ -194,16 +183,10 @@ def get_predictor_map() -> dict[str, Predictor]:
     registry = load_model_registry()
     predictors: dict[str, Predictor] = {}
     for model_artifact in registry.models:
-        model_path = model_artifact.model_path
-        if model_path.suffix == ".keras":
-            tflite_path = model_path.with_suffix(".tflite")
-            if tflite_path.exists():
-                model_path = tflite_path
-        interpreter = tflite.Interpreter(model_path=str(model_path))
-        interpreter.allocate_tensors()
+        keras_model = tf.keras.models.load_model(model_artifact.model_path)
         class_indices = json.loads(model_artifact.class_indices_path.read_text(encoding="utf-8"))
         predictors[model_artifact.experiment_id] = Predictor(
-            interpreter=interpreter,
+            model=keras_model,
             class_indices=class_indices,
             threshold_used=model_artifact.threshold,
             model_version=model_artifact.experiment_id,
