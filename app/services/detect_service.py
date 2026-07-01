@@ -16,6 +16,7 @@ async def create_detection(db: Session, predictor: Predictor, user: User, image_
         threshold_used=float(prediction["threshold_used"]),
         model_version=str(prediction["model_version"]),
         explanation=str(prediction["explanation"]),
+        heatmap_base64=prediction.get("heatmap_base64"),
     )
     db.add(detection)
     db.commit()

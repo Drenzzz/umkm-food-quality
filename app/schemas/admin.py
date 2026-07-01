@@ -26,6 +26,7 @@ class HistoryDetailResponse(BaseModel):
     model_version: str
     explanation: str
     image_url: str
+    heatmap_base64: str | None = None
     created_at: datetime
 
 
@@ -76,6 +77,7 @@ class AdminDetectionDetailResponse(BaseModel):
     model_version: str
     explanation: str
     image_url: str
+    heatmap_base64: str | None = None
     created_at: datetime
     active_model_id: str
     prediction_mode: str

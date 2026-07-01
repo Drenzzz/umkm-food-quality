@@ -19,6 +19,7 @@ class DetectResponse(BaseModel):
     model_version: str
     explanation: str
     image_url: str
+    heatmap_base64: str | None = None
     created_at: datetime
 
 
