@@ -1,0 +1,151 @@
+{
+  "experiment": "umkm_food_quality_v1",
+  "used_split": "val",
+  "priority_metric": "recall_tidak_layak_jual",
+  "thresholds": [
+    {
+      "threshold": 0.1,
+      "accuracy": 0.9,
+      "precision_macro": 0.9092071611253196,
+      "recall_macro": 0.8999999999999999,
+      "f1_macro": 0.8994343180389692,
+      "recall_tidak_layak_jual": 0.975
+    },
+    {
+      "threshold": 0.15,
+      "accuracy": 0.8875,
+      "precision_macro": 0.8896920175989944,
+      "recall_macro": 0.8875,
+      "f1_macro": 0.887341574088562,
+      "recall_tidak_layak_jual": 0.925
+    },
+    {
+      "threshold": 0.2,
+      "accuracy": 0.8875,
+      "precision_macro": 0.8896920175989944,
+      "recall_macro": 0.8875,
+      "f1_macro": 0.887341574088562,
+      "recall_tidak_layak_jual": 0.925
+    },
+    {
+      "threshold": 0.25,
+      "accuracy": 0.875,
+      "precision_macro": 0.8759398496240601,
+      "recall_macro": 0.875,
+      "f1_macro": 0.8749218261413383,
+      "recall_tidak_layak_jual": 0.9
+    },
+    {
+      "threshold": 0.3,
+      "accuracy": 0.8875,
+      "precision_macro": 0.8877423389618512,
+      "recall_macro": 0.8875,
+      "f1_macro": 0.8874824191279886,
+      "recall_tidak_layak_jual": 0.9
+    },
+    {
+      "threshold": 0.35,
+      "accuracy": 0.8875,
+      "precision_macro": 0.8877423389618512,
+      "recall_macro": 0.8875,
+      "f1_macro": 0.8874824191279886,
+      "recall_tidak_layak_jual": 0.9
+    },
+    {
+      "threshold": 0.4,
+      "accuracy": 0.8625,
+      "precision_macro": 0.8627267041901188,
+      "recall_macro": 0.8625,
+      "f1_macro": 0.8624785122675418,
+      "recall_tidak_layak_jual": 0.85
+    },
+    {
+      "threshold": 0.45,
+      "accuracy": 0.85,
+      "precision_macro": 0.8508771929824561,
+      "recall_macro": 0.85,
+      "f1_macro": 0.849906191369606,
+      "recall_tidak_layak_jual": 0.825
+    },
+    {
+      "threshold": 0.5,
+      "accuracy": 0.8625,
+      "precision_macro": 0.8645505971087366,
+      "recall_macro": 0.8625,
+      "f1_macro": 0.8623063683304647,
+      "recall_tidak_layak_jual": 0.825
+    },
+    {
+      "threshold": 0.55,
+      "accuracy": 0.85,
+      "precision_macro": 0.8535353535353536,
+      "recall_macro": 0.8500000000000001,
+      "f1_macro": 0.849624060150376,
+      "recall_tidak_layak_jual": 0.8
+    },
+    {
+      "threshold": 0.6,
+      "accuracy": 0.8375,
+      "precision_macro": 0.8428571428571429,
+      "recall_macro": 0.8375,
+      "f1_macro": 0.8368627450980393,
+      "recall_tidak_layak_jual": 0.775
+    },
+    {
+      "threshold": 0.65,
+      "accuracy": 0.8375,
+      "precision_macro": 0.8428571428571429,
+      "recall_macro": 0.8375,
+      "f1_macro": 0.8368627450980393,
+      "recall_tidak_layak_jual": 0.775
+    },
+    {
+      "threshold": 0.7,
+      "accuracy": 0.85,
+      "precision_macro": 0.8580562659846547,
+      "recall_macro": 0.8500000000000001,
+      "f1_macro": 0.8491514770584538,
+      "recall_tidak_layak_jual": 0.775
+    },
+    {
+      "threshold": 0.75,
+      "accuracy": 0.8375,
+      "precision_macro": 0.8554970375246873,
+      "recall_macro": 0.8374999999999999,
+      "f1_macro": 0.8354169963601836,
+      "recall_tidak_layak_jual": 0.725
+    },
+    {
+      "threshold": 0.8,
+      "accuracy": 0.8375,
+      "precision_macro": 0.8651115618661258,
+      "recall_macro": 0.8374999999999999,
+      "f1_macro": 0.834368530020704,
+      "recall_tidak_layak_jual": 0.7
+    },
+    {
+      "threshold": 0.85,
+      "accuracy": 0.8125,
+      "precision_macro": 0.8494060097833682,
+      "recall_macro": 0.8125,
+      "f1_macro": 0.8074145402022148,
+      "recall_tidak_layak_jual": 0.65
+    },
+    {
+      "threshold": 0.9,
+      "accuracy": 0.8125,
+      "precision_macro": 0.8494060097833682,
+      "recall_macro": 0.8125,
+      "f1_macro": 0.8074145402022148,
+      "recall_tidak_layak_jual": 0.65
+    }
+  ],
+  "recommended_threshold": {
+    "threshold": 0.1,
+    "accuracy": 0.9,
+    "precision_macro": 0.9092071611253196,
+    "recall_macro": 0.8999999999999999,
+    "f1_macro": 0.8994343180389692,
+    "recall_tidak_layak_jual": 0.975
+  }
+}

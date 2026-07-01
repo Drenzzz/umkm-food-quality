@@ -1,0 +1,50 @@
+{
+  "experiment": "umkm_food_quality_v1",
+  "used_split": "test",
+  "threshold": 0.3,
+  "sample_count": 72,
+  "metrics": {
+    "accuracy": 0.9166666666666666,
+    "precision_macro": 0.9173745173745174,
+    "recall_macro": 0.9173745173745174,
+    "f1_macro": 0.9166666666666666,
+    "recall_tidak_layak_jual": 0.9428571428571428
+  },
+  "classification_report": {
+    "layak_jual": {
+      "precision": 0.9428571428571428,
+      "recall": 0.8918918918918919,
+      "f1-score": 0.9166666666666666,
+      "support": 37.0
+    },
+    "tidak_layak_jual": {
+      "precision": 0.8918918918918919,
+      "recall": 0.9428571428571428,
+      "f1-score": 0.9166666666666666,
+      "support": 35.0
+    },
+    "accuracy": 0.9166666666666666,
+    "macro avg": {
+      "precision": 0.9173745173745174,
+      "recall": 0.9173745173745174,
+      "f1-score": 0.9166666666666666,
+      "support": 72.0
+    },
+    "weighted avg": {
+      "precision": 0.918082368082368,
+      "recall": 0.9166666666666666,
+      "f1-score": 0.9166666666666666,
+      "support": 72.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      33,
+      4
+    ],
+    [
+      2,
+      33
+    ]
+  ]
+}

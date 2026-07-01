@@ -16,19 +16,12 @@ __pycache__/
 dataset/final/
 dataset/working/normalized/**/*.jpg
 dataset/working/merged_public/**/*.jpg
-dataset/working/manual_normalized/
 dataset/archive/**/*.txt
 dataset/metadata/master_metadata.csv
 dataset/metadata/form_image_metadata.csv
-ml/model/*.keras
 ml/model/*.h5
 ml/model/*.ckpt
-ml/model/**/evaluation/
 ml/model/**/artifact_manifest.json
-ml/model/**/*.keras
-ml/model/**/training_history.json
-ml/model/**/training_log.csv
-ml/model/**/class_indices.json
 ml/model/test_manifest_probe/
 
 # Build artifacts
