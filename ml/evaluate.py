@@ -87,6 +87,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Decision threshold for the sigmoid output.",
     )
     parser.add_argument(
+        "--tta",
+        action="store_true",
+        help="Enable Test-Time Augmentation: average predictions over flipped variants.",
+    )
+    parser.add_argument(
         "--split-name",
         default="test",
         choices=["train", "val", "test"],
@@ -125,7 +130,12 @@ def main() -> int:
     dataset = build_dataset(evaluation_rows, args.image_size, args.batch_size)
 
     y_true = np.array([LABEL_TO_INDEX[row.final_label] for row in evaluation_rows], dtype=np.int32)
-    y_prob = model.predict(dataset, verbose=0).flatten()
+
+    if args.tta:
+        y_prob = predict_with_tta(model, evaluation_rows, args.image_size)
+    else:
+        y_prob = model.predict(dataset, verbose=0).flatten()
+
     y_pred = (y_prob >= args.threshold).astype(np.int32)
 
     metrics = compute_metrics(y_true, y_pred)
@@ -239,6 +249,44 @@ def load_and_preprocess_image(image_path: tf.Tensor, label: tf.Tensor, image_siz
     image = tf.image.resize(image, [image_size, image_size])
     image = preprocess_input(tf.cast(image, tf.float32))
     return image, label
+
+
+def predict_with_tta(
+    model: tf.keras.Model,
+    rows: list[EvaluationRow],
+    image_size: int,
+    batch_size: int = 32,
+) -> np.ndarray:
+    """Average sigmoid predictions over the original image and horizontal flip."""
+    path_tensor = tf.constant([str(r.image_path) for r in rows])
+    label_tensor = tf.constant([0.0] * len(rows), dtype=tf.float32)
+
+    ds = tf.data.Dataset.from_tensor_slices((path_tensor, label_tensor))
+    ds = ds.map(
+        lambda p, l: load_and_preprocess_image(p, l, image_size),
+        num_parallel_calls=tf.data.AUTOTUNE,
+    )
+    ds = ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    probs_original = model.predict(ds, verbose=0).flatten()
+
+    ds_flipped = tf.data.Dataset.from_tensor_slices((path_tensor, label_tensor))
+    ds_flipped = ds_flipped.map(
+        lambda p, l: _load_image_flipped(p, l, image_size),
+        num_parallel_calls=tf.data.AUTOTUNE,
+    )
+    ds_flipped = ds_flipped.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    probs_flipped = model.predict(ds_flipped, verbose=0).flatten()
+
+    return (probs_original + probs_flipped) / 2.0
+
+
+def _load_image_flipped(path: tf.Tensor, label: tf.Tensor, size: int) -> tuple[tf.Tensor, tf.Tensor]:
+    raw = tf.io.read_file(path)
+    img = tf.image.decode_jpeg(raw, channels=3)
+    img = tf.image.resize(img, [size, size])
+    img = tf.image.flip_left_right(img)
+    img = preprocess_input(tf.cast(img, tf.float32))
+    return img, label
 
 
 def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:

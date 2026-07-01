@@ -84,3 +84,23 @@ Default path:
 ```text
 ml/reports/domain_bias_report.json
 ```
+
+## K-Fold Cross-Validation
+
+For more statistically robust metrics, run stratified 5-fold cross-validation:
+
+```bash
+python -m ml.cross_validate --project-root . --folds 5
+```
+
+This trains 5 separate models and reports mean ± std across folds. Results are saved to `ml/reports/kfold_cv_report.json`.
+
+Requires GPU for practical training times (~minutes per fold on RTX 4050).
+
+## Test-Time Augmentation (TTA)
+
+TTA averages predictions over the original image and a horizontally flipped variant. Typically improves accuracy by 1-2% with zero retraining cost.
+
+```bash
+python -m ml.evaluate --experiment umkm_food_quality_v1 --tta
+```
