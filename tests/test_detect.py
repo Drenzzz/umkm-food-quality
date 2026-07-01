@@ -19,15 +19,20 @@ os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
 os.environ["MODEL_PATH"] = "ml/model/umkm_food_quality_v1/model.keras"
 os.environ["CLASS_INDICES_PATH"] = "ml/model/umkm_food_quality_v1/class_indices.json"
 os.environ["CORS_ORIGINS"] = "http://localhost:3000"
+os.environ["ALLOWED_HOSTS"] = "localhost,127.0.0.1,testserver"
 os.environ["ALLOWED_IMAGE_DOMAINS"] = ""
 
 if TEST_DB_PATH.exists():
     TEST_DB_PATH.unlink()
 
 from app.core.config import get_settings  # noqa: E402
-from app.main import app  # noqa: E402
 
+# Clear cached settings so env vars set above (ALLOWED_HOSTS etc.) take effect
+# when the app module is imported below. Without this, a previously cached
+# Settings instance from another test module would be reused.
 get_settings.cache_clear()
+
+from app.main import app  # noqa: E402
 
 FIXTURE_IMAGE = Path("tests/fixtures/sample_keripik.jpg").read_bytes()
 MOCK_IMAGE_URL = "https://mock.example.com/sample.jpg"
@@ -41,6 +46,26 @@ def _expected_active_experiment() -> str:
     config_path = Path("ml/model/active_model.json")
     payload = json.loads(config_path.read_text(encoding="utf-8"))
     return str(payload["experiment_id"])
+
+
+@pytest.fixture(autouse=True)
+def mock_predictor():
+    """Mock the ML predictor so tests don't need a real TFLite model."""
+    from unittest.mock import AsyncMock, MagicMock
+
+    fake_predictor = MagicMock()
+    fake_predictor.predict_from_url = AsyncMock(return_value={
+        "label": "Layak Jual",
+        "label_key": "layak_jual",
+        "confidence_score": 88.5,
+        "raw_score": 0.115,
+        "threshold_used": 0.3,
+        "model_version": "umkm_food_quality_v1",
+        "explanation": "Produk menunjukkan ciri visual yang sangat baik.",
+    })
+
+    with patch("app.routers.detect.get_predictor", return_value=fake_predictor):
+        yield fake_predictor
 
 
 @pytest.fixture()
