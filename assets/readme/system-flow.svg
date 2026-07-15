@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="390" viewBox="0 0 1200 390" role="img" aria-labelledby="title desc">
+  <title id="title">Alur sistem FoodQCheck</title>
+  <desc id="desc">Aplikasi mobile mengunggah foto, memanggil API, lalu API memproses model dan menyimpan hasil deteksi.</desc>
+  <rect width="1200" height="390" rx="28" fill="#1f1b18"/>
+  <text x="58" y="62" fill="#f4eadb" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="32" font-weight="800">Satu alur, dua repository</text>
+  <text x="58" y="91" fill="#c8bfb5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="18">Foto diproses di mobile, dievaluasi API, lalu hasilnya kembali sebagai riwayat pengguna.</text>
+  <g transform="translate(58 142)" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">
+    <rect width="205" height="166" rx="16" fill="#f4eadb"/>
+    <text x="24" y="39" fill="#ba552d" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700">01 / MOBILE</text>
+    <text x="24" y="78" fill="#1f1b18" font-size="25" font-weight="800">FoodQCheck</text>
+    <text x="24" y="108" fill="#4d453e" font-size="17">Kamera, galeri, hasil,</text>
+    <text x="24" y="131" fill="#4d453e" font-size="17">dan riwayat deteksi.</text>
+    <path d="M225 83H285" stroke="#9ab59c" stroke-width="4"/>
+    <path d="M276 73L289 83L276 93" fill="none" stroke="#9ab59c" stroke-width="4"/>
+    <rect x="310" width="205" height="166" rx="16" fill="#ba552d"/>
+    <text x="334" y="39" fill="#f4eadb" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700">02 / UPLOAD</text>
+    <text x="334" y="78" fill="#f4eadb" font-size="25" font-weight="800">Cloudinary</text>
+    <text x="334" y="108" fill="#f4eadb" font-size="17">Menyediakan URL gambar</text>
+    <text x="334" y="131" fill="#f4eadb" font-size="17">untuk request deteksi.</text>
+    <path d="M535 83H595" stroke="#f4eadb" stroke-width="4"/>
+    <path d="M586 73L599 83L586 93" fill="none" stroke="#f4eadb" stroke-width="4"/>
+    <rect x="620" width="236" height="166" rx="16" fill="#f4eadb"/>
+    <text x="644" y="39" fill="#ba552d" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700">03 / API</text>
+    <text x="644" y="78" fill="#1f1b18" font-size="25" font-weight="800">FastAPI + model</text>
+    <text x="644" y="108" fill="#4d453e" font-size="17">Validasi URL, inference,</text>
+    <text x="644" y="131" fill="#4d453e" font-size="17">dan aturan threshold.</text>
+    <path d="M876 83H936" stroke="#9ab59c" stroke-width="4"/>
+    <path d="M927 73L940 83L927 93" fill="none" stroke="#9ab59c" stroke-width="4"/>
+    <rect x="961" width="181" height="166" rx="16" fill="#9ab59c"/>
+    <text x="985" y="39" fill="#1f1b18" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700">04 / RECORD</text>
+    <text x="985" y="78" fill="#1f1b18" font-size="25" font-weight="800">PostgreSQL</text>
+    <text x="985" y="108" fill="#1f1b18" font-size="17">Hasil dan riwayat</text>
+    <text x="985" y="131" fill="#1f1b18" font-size="17">per pengguna.</text>
+  </g>
+</svg>
